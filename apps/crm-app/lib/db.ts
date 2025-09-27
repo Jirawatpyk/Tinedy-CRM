@@ -171,18 +171,18 @@ export async function checkMigrationStatus() {
  */
 
 /**
- * Monitor database query performance
+ * Monitor database query performance - Disabled for build compatibility
  */
-export function enableQueryLogging() {
-  if (process.env.NODE_ENV === 'development') {
-    prisma.$on('query', (e: any) => {
-      console.log(`Query: ${e.query}`)
-      console.log(`Duration: ${e.duration}ms`)
-      console.log(`Params: ${e.params}`)
-      console.log('---')
-    })
-  }
-}
+// export function enableQueryLogging() {
+//   if (process.env.NODE_ENV === 'development') {
+//     prisma.$on('query', (e: any) => {
+//       console.log(`Query: ${e.query}`)
+//       console.log(`Duration: ${e.duration}ms`)
+//       console.log(`Params: ${e.params}`)
+//       console.log('---')
+//     })
+//   }
+// }
 
 /**
  * =============================================================================
