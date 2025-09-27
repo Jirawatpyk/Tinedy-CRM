@@ -62,7 +62,8 @@
       "Bash(taskkill:*)",
       "Bash(PORT=3000 npm run dev)",
       "Bash(netstat:*)",
-      "Bash(findstr:*)"
+      "Bash(findstr:*)",
+      "Bash(git pull:*)"
     ],
     "deny": [],
     "ask": []
