@@ -9,11 +9,27 @@
     "lint": "next lint",
     "type-check": "tsc --noEmit",
     "test": "jest",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:migrate:deploy": "prisma migrate deploy",
+    "db:migrate:reset": "prisma migrate reset",
+    "db:studio": "prisma studio",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:push": "prisma db push",
+    "db:pull": "prisma db pull",
+    "db:format": "prisma format",
+    "db:validate": "prisma validate",
+    "db:reset": "prisma migrate reset --force && npm run db:seed",
+    "db:fresh": "npm run db:reset",
+    "db:setup": "tsx scripts/setup-database.ts",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
+    "@hookform/resolvers": "^5.2.2",
     "@prisma/client": "^6.16.2",
     "@radix-ui/react-label": "^2.1.7",
+    "@radix-ui/react-slot": "^1.2.3",
     "@tinedy/types": "workspace:*",
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^20.0.0",
@@ -35,7 +51,8 @@
     "tailwind-merge": "^2.0.0",
     "tailwindcss": "^3.0.0",
     "tailwindcss-animate": "^1.0.7",
-    "typescript": "^5.0.0"
+    "typescript": "^5.0.0",
+    "zod": "^4.1.11"
   },
   "devDependencies": {
     "@playwright/test": "^1.55.1",
@@ -52,6 +69,10 @@
     "jest": "^29.0.0",
     "jest-environment-jsdom": "^29.0.0",
     "jest-mock-extended": "^4.0.0",
-    "prettier": "^3.0.0"
+    "prettier": "^3.0.0",
+    "tsx": "^4.7.0"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   }
 }

@@ -6,7 +6,8 @@ import {
   hasRequiredRole,
   isAdmin,
   isOperations,
-  isManager,
+  isTraining,
+  isQCManager,
 } from '../utils/auth'
 
 export function useRole() {
@@ -24,6 +25,7 @@ export function useRole() {
     },
     isAdmin: () => isAdmin(userRole),
     isOperations: () => isOperations(userRole),
-    isManager: () => isManager(userRole),
+    isTraining: () => isTraining(userRole),
+    isQCManager: () => isQCManager(userRole),
   }
 }

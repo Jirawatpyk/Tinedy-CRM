@@ -54,7 +54,7 @@ export function ManagerOnly({
   fallback?: React.ReactNode
 }) {
   return (
-    <RoleGuard requiredRoles={['ADMIN', 'MANAGER']} fallback={fallback}>
+    <RoleGuard requiredRoles={['ADMIN', 'QC_MANAGER']} fallback={fallback}>
       {children}
     </RoleGuard>
   )
@@ -69,7 +69,7 @@ export function OperationsOnly({
 }) {
   return (
     <RoleGuard
-      requiredRoles={['ADMIN', 'OPERATIONS', 'MANAGER']}
+      requiredRoles={['ADMIN', 'OPERATIONS', 'QC_MANAGER']}
       fallback={fallback}
     >
       {children}

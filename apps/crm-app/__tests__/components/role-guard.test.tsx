@@ -116,7 +116,7 @@ describe('RoleGuard Components', () => {
 
   describe('ManagerOnly', () => {
     it('should render children for manager and admin users', () => {
-      mockUseRole.mockReturnValue(mockSession('MANAGER'))
+      mockUseRole.mockReturnValue(mockSession('QC_MANAGER'))
 
       render(
         <ManagerOnly>

@@ -22,3 +22,8 @@ devStoryLocation: docs/stories
 slashPrefix: BMad
 agents:
   - db
+  - database-architect
+  - nextjs
+  - auth
+  - test
+  - api

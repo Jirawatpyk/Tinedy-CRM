@@ -29,6 +29,8 @@ describe('AuthService', () => {
         password: hashedPassword,
         role: 'OPERATIONS' as const,
         createdAt: new Date(),
+        updatedAt: new Date(),
+        isActive: true,
       }
 
       ;(bcrypt.hash as jest.Mock).mockResolvedValue(hashedPassword)

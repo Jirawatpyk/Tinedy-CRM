@@ -5,9 +5,9 @@ import { useRole } from '@/lib/hooks/useRole'
 import { Button } from '@/components/ui/button'
 
 export function AdminNav() {
-  const { isAdmin, isManager } = useRole()
+  const { isAdmin, isQCManager } = useRole()
 
-  if (!isAdmin() && !isManager()) {
+  if (!isAdmin() && !isQCManager()) {
     return null
   }
 
@@ -33,9 +33,9 @@ export function AdminNav() {
             </>
           )}
 
-          {(isAdmin() || isManager()) && (
+          {(isAdmin() || isQCManager()) && (
             <Button asChild variant="ghost" size="sm">
-              <Link href="/manager">Manager Dashboard</Link>
+              <Link href="/qc">QC Dashboard</Link>
             </Button>
           )}
         </div>

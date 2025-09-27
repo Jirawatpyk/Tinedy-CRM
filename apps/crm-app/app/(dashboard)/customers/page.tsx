@@ -1,0 +1,36 @@
+import { Suspense } from 'react'
+import { Metadata } from 'next'
+import { CustomerTable } from '@/components/shared/CustomerTable'
+import { Button } from '@/components/ui/button'
+import { Plus } from 'lucide-react'
+import Link from 'next/link'
+
+export const metadata: Metadata = {
+  title: 'รายการลูกค้า | Tinedy CRM',
+  description: 'จัดการข้อมูลลูกค้าทั้งหมดในระบบ',
+}
+
+export default function CustomersPage() {
+  return (
+    <div className="container mx-auto py-6">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">รายการลูกค้า</h1>
+          <p className="text-muted-foreground">
+            จัดการและติดตามข้อมูลลูกค้าทั้งหมดในระบบ
+          </p>
+        </div>
+        <Link href="/customers/add">
+          <Button>
+            <Plus className="mr-2 h-4 w-4" />
+            เพิ่มลูกค้าใหม่
+          </Button>
+        </Link>
+      </div>
+
+      <Suspense fallback={<div>กำลังโหลดข้อมูลลูกค้า...</div>}>
+        <CustomerTable />
+      </Suspense>
+    </div>
+  )
+}

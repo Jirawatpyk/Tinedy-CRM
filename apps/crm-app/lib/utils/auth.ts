@@ -3,7 +3,8 @@ import { UserRole } from '@tinedy/types'
 export const ROLES = {
   ADMIN: 'ADMIN' as UserRole,
   OPERATIONS: 'OPERATIONS' as UserRole,
-  MANAGER: 'MANAGER' as UserRole,
+  TRAINING: 'TRAINING' as UserRole,
+  QC_MANAGER: 'QC_MANAGER' as UserRole,
 } as const
 
 export function hasRequiredRole(
@@ -21,8 +22,12 @@ export function isOperations(userRole: UserRole): boolean {
   return userRole === ROLES.OPERATIONS
 }
 
-export function isManager(userRole: UserRole): boolean {
-  return userRole === ROLES.MANAGER
+export function isTraining(userRole: UserRole): boolean {
+  return userRole === ROLES.TRAINING
+}
+
+export function isQCManager(userRole: UserRole): boolean {
+  return userRole === ROLES.QC_MANAGER
 }
 
 export function getRoleDisplayName(role: UserRole): string {
@@ -31,8 +36,10 @@ export function getRoleDisplayName(role: UserRole): string {
       return 'Administrator'
     case ROLES.OPERATIONS:
       return 'Operations Team'
-    case ROLES.MANAGER:
-      return 'Manager'
+    case ROLES.TRAINING:
+      return 'Training Team'
+    case ROLES.QC_MANAGER:
+      return 'QC Manager'
     default:
       return 'Unknown'
   }

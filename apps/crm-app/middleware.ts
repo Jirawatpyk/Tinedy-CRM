@@ -7,8 +7,8 @@ const PROTECTED_ROUTES: Record<string, UserRole[]> = {
   '/admin': ['ADMIN'],
   '/admin/users': ['ADMIN'],
   '/admin/settings': ['ADMIN'],
-  '/manager': ['ADMIN', 'MANAGER'],
-  '/operations': ['ADMIN', 'OPERATIONS', 'MANAGER'],
+  '/manager': ['ADMIN', 'QC_MANAGER'],
+  '/operations': ['ADMIN', 'OPERATIONS', 'QC_MANAGER'],
 }
 
 export default auth((req) => {

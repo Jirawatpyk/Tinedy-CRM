@@ -1,0 +1,1226 @@
+openapi: 3.0.3
+info:
+  title: Tinedy CRM API
+  description: |
+    Internal CRM API for managing customers, jobs, and quality control workflows for Thai business operations.
+
+    ## Features
+    - **Thai Language Support**: Native support for Thai names, addresses, and business data
+    - **LINE OA Integration**: Direct integration with LINE Official Account
+    - **N8N Automation**: Webhook endpoints for workflow automation
+    - **Role-based Access**: Comprehensive permission system for internal teams
+    - **Quality Control**: Integrated quality assurance workflows
+
+    ## Authentication
+    - **Session-based**: For web application (cookies)
+    - **JWT Tokens**: For API integrations
+    - **API Keys**: For webhook integrations
+
+    ## Thai Business Context
+    - Phone numbers: Thai format (+66, 08x, 09x)
+    - Names: Thai and mixed Thai-English support
+    - LINE User IDs: LINE Official Account format
+    - Service types: Thai service descriptions
+  version: 1.0.0
+  contact:
+    name: Tinedy Development Team
+    email: dev@tinedy.com
+    url: https://tinedy.com
+  license:
+    name: Proprietary
+    url: https://tinedy.com/license
+
+servers:
+  - url: https://crm.tinedy.com/api
+    description: Production server
+  - url: http://localhost:3000/api
+    description: Development server
+
+security:
+  - SessionAuth: []
+  - BearerAuth: []
+  - ApiKeyAuth: []
+
+paths:
+  # Customer Management
+  /customers:
+    get:
+      summary: List customers
+      description: Retrieve a paginated list of customers with optional filtering and search
+      tags: [Customers]
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Search'
+        - name: status
+          in: query
+          description: Filter by customer status
+          schema:
+            $ref: '#/components/schemas/CustomerStatus'
+        - name: lineUserId
+          in: query
+          description: Find by LINE User ID
+          schema:
+            type: string
+            pattern: '^U[a-fA-F0-9]{32}$'
+        - name: sortBy
+          in: query
+          description: Sort field
+          schema:
+            type: string
+            enum: [name, createdAt, updatedAt, lastJobDate]
+        - name: sortOrder
+          in: query
+          description: Sort direction
+          schema:
+            type: string
+            enum: [asc, desc]
+        - name: include
+          in: query
+          description: Include related data
+          schema:
+            type: string
+            enum: [jobs, jobsCount]
+      responses:
+        '200':
+          description: List of customers
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Customer'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+    post:
+      summary: Create customer
+      description: Create a new customer with Thai business data support
+      tags: [Customers]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCustomerRequest'
+      responses:
+        '201':
+          description: Customer created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /customers/{id}:
+    get:
+      summary: Get customer
+      description: Retrieve a specific customer by ID
+      tags: [Customers]
+      parameters:
+        - $ref: '#/components/parameters/CustomerId'
+        - name: include
+          in: query
+          description: Include related data
+          schema:
+            type: string
+            enum: [jobs, qualityChecks]
+      responses:
+        '200':
+          description: Customer details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerWithRelations'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    put:
+      summary: Update customer
+      description: Update an existing customer
+      tags: [Customers]
+      parameters:
+        - $ref: '#/components/parameters/CustomerId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCustomerRequest'
+      responses:
+        '200':
+          description: Customer updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+    delete:
+      summary: Delete customer
+      description: Delete a customer (soft delete)
+      tags: [Customers]
+      parameters:
+        - $ref: '#/components/parameters/CustomerId'
+      responses:
+        '204':
+          description: Customer deleted successfully
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/BusinessRuleViolation'
+
+  # Job Management
+  /jobs:
+    get:
+      summary: List jobs
+      description: Retrieve a paginated list of jobs with filtering and search
+      tags: [Jobs]
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Search'
+        - name: status
+          in: query
+          description: Filter by job status
+          schema:
+            $ref: '#/components/schemas/JobStatus'
+        - name: priority
+          in: query
+          description: Filter by priority
+          schema:
+            $ref: '#/components/schemas/JobPriority'
+        - name: customerId
+          in: query
+          description: Filter by customer ID
+          schema:
+            type: string
+        - name: assignedToId
+          in: query
+          description: Filter by assigned user ID
+          schema:
+            type: string
+        - name: include
+          in: query
+          description: Include related data
+          schema:
+            type: string
+            enum: [customer, assignedTo, qualityChecks]
+      responses:
+        '200':
+          description: List of jobs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Job'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+
+    post:
+      summary: Create job
+      description: Create a new job (booking)
+      tags: [Jobs]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateJobRequest'
+      responses:
+        '201':
+          description: Job created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /jobs/{id}:
+    get:
+      summary: Get job
+      description: Retrieve a specific job by ID
+      tags: [Jobs]
+      parameters:
+        - $ref: '#/components/parameters/JobId'
+        - name: include
+          in: query
+          description: Include related data
+          schema:
+            type: string
+            enum: [customer, assignedTo, qualityChecks, history]
+      responses:
+        '200':
+          description: Job details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobWithRelations'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      summary: Update job
+      description: Update job status, assignment, or details
+      tags: [Jobs]
+      parameters:
+        - $ref: '#/components/parameters/JobId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateJobRequest'
+      responses:
+        '200':
+          description: Job updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  # Webhook Endpoints
+  /webhook/n8n:
+    post:
+      summary: N8N webhook
+      description: Receive workflow execution data from N8N automation platform
+      tags: [Webhooks]
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/N8NWebhookRequest'
+      responses:
+        '200':
+          description: Webhook processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /webhook/line:
+    post:
+      summary: LINE OA webhook
+      description: Process LINE Official Account webhook events
+      tags: [Webhooks]
+      security:
+        - LineSignature: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LineWebhookRequest'
+      responses:
+        '200':
+          description: LINE webhook processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # Authentication
+  /auth/signin:
+    post:
+      summary: Sign in
+      description: Authenticate user and create session
+      tags: [Authentication]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignInRequest'
+      responses:
+        '200':
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SignInResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/signout:
+    post:
+      summary: Sign out
+      description: End user session
+      tags: [Authentication]
+      responses:
+        '200':
+          description: Sign out successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Signed out successfully"
+
+  /auth/session:
+    get:
+      summary: Get current session
+      description: Retrieve current user session information
+      tags: [Authentication]
+      responses:
+        '200':
+          description: Current session
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+components:
+  securitySchemes:
+    SessionAuth:
+      type: apiKey
+      in: cookie
+      name: next-auth.session-token
+      description: Session-based authentication for web application
+
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token authentication for API access
+
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key authentication for webhooks
+
+    LineSignature:
+      type: apiKey
+      in: header
+      name: X-Line-Signature
+      description: LINE webhook signature verification
+
+  parameters:
+    Page:
+      name: page
+      in: query
+      description: Page number for pagination
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+
+    Limit:
+      name: limit
+      in: query
+      description: Number of items per page
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+
+    Search:
+      name: search
+      in: query
+      description: Search query for text fields
+      schema:
+        type: string
+        maxLength: 100
+
+    CustomerId:
+      name: id
+      in: path
+      required: true
+      description: Customer ID (CUID format)
+      schema:
+        type: string
+        pattern: '^c[a-z0-9]{24}$'
+
+    JobId:
+      name: id
+      in: path
+      required: true
+      description: Job ID (CUID format)
+      schema:
+        type: string
+        pattern: '^c[a-z0-9]{24}$'
+
+  schemas:
+    # Customer Schemas
+    Customer:
+      type: object
+      properties:
+        id:
+          type: string
+          pattern: '^c[a-z0-9]{24}$'
+          description: Customer ID in CUID format
+          example: 'clr123abc456def789'
+        name:
+          type: string
+          minLength: 2
+          maxLength: 100
+          description: Customer name (Thai/English)
+          example: 'สมชาย ใจดี'
+        phone:
+          type: string
+          pattern: '^\+66[0-9]{8,9}$'
+          description: Thai phone number in international format
+          example: '+66812345678'
+        email:
+          type: string
+          format: email
+          description: Email address
+          example: 'somchai@example.com'
+        address:
+          type: string
+          maxLength: 500
+          description: Customer address
+          example: '123 ถนนสุขุมวิท แขวงคลองตัน เขตคลองเตย กรุงเทพฯ 10110'
+        lineUserId:
+          type: string
+          pattern: '^U[a-fA-F0-9]{32}$'
+          description: LINE User ID
+          example: 'Uab1234567890abcdef1234567890abcdef'
+        status:
+          $ref: '#/components/schemas/CustomerStatus'
+        notes:
+          type: string
+          maxLength: 1000
+          description: Additional notes
+          example: 'ลูกค้าประจำ บริการดี'
+        createdAt:
+          type: string
+          format: date-time
+          description: Creation timestamp
+        updatedAt:
+          type: string
+          format: date-time
+          description: Last update timestamp
+      required:
+        - id
+        - name
+        - status
+        - createdAt
+        - updatedAt
+
+    CustomerStatus:
+      type: string
+      enum: [ACTIVE, INACTIVE, BLOCKED]
+      description: |
+        Customer status:
+        - ACTIVE: Can receive new jobs
+        - INACTIVE: No new jobs, but can view history
+        - BLOCKED: Blocked from system
+
+    CustomerWithRelations:
+      allOf:
+        - $ref: '#/components/schemas/Customer'
+        - type: object
+          properties:
+            jobs:
+              type: array
+              items:
+                $ref: '#/components/schemas/Job'
+            jobsCount:
+              type: integer
+              description: Total number of jobs
+            lastJobDate:
+              type: string
+              format: date-time
+              description: Last job completion date
+
+    CreateCustomerRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 100
+          description: Customer name (Thai/English)
+          example: 'สมชาย ใจดี'
+        phone:
+          type: string
+          description: Thai phone number (will be converted to international format)
+          example: '0812345678'
+        email:
+          type: string
+          format: email
+          example: 'somchai@example.com'
+        address:
+          type: string
+          maxLength: 500
+          example: '123 ถนนสุขุมวิท กรุงเทพฯ'
+        lineUserId:
+          type: string
+          pattern: '^U[a-fA-F0-9]{32}$'
+          example: 'Uab1234567890abcdef1234567890abcdef'
+        notes:
+          type: string
+          maxLength: 1000
+          example: 'ลูกค้าใหม่จาก LINE OA'
+      required:
+        - name
+
+    UpdateCustomerRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 100
+        phone:
+          type: string
+        email:
+          type: string
+          format: email
+        address:
+          type: string
+          maxLength: 500
+        status:
+          $ref: '#/components/schemas/CustomerStatus'
+        notes:
+          type: string
+          maxLength: 1000
+
+    # Job Schemas
+    Job:
+      type: object
+      properties:
+        id:
+          type: string
+          pattern: '^c[a-z0-9]{24}$'
+          description: Job ID in CUID format
+        customerId:
+          type: string
+          description: Customer ID
+        serviceType:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: Thai service description
+          example: 'บริการทำความสะอาด'
+        description:
+          type: string
+          minLength: 1
+          maxLength: 1000
+          description: Job details
+          example: 'ทำความสะอาดออฟฟิศ ชั้น 15'
+        status:
+          $ref: '#/components/schemas/JobStatus'
+        priority:
+          $ref: '#/components/schemas/JobPriority'
+        assignedToId:
+          type: string
+          description: Assigned user ID
+        scheduledAt:
+          type: string
+          format: date-time
+          description: Scheduled start time
+        startedAt:
+          type: string
+          format: date-time
+          description: Actual start time
+        completedAt:
+          type: string
+          format: date-time
+          description: Completion time
+        estimatedDuration:
+          type: integer
+          minimum: 1
+          maximum: 1440
+          description: Estimated duration in minutes
+        actualDuration:
+          type: integer
+          description: Actual duration in minutes
+        notes:
+          type: string
+          maxLength: 1000
+          description: Public notes
+        internalNotes:
+          type: string
+          maxLength: 1000
+          description: Internal notes (staff only)
+        webhookData:
+          type: object
+          description: Original webhook payload
+        n8nWorkflowId:
+          type: string
+          description: N8N workflow identifier
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - customerId
+        - serviceType
+        - description
+        - status
+        - priority
+        - createdAt
+        - updatedAt
+
+    JobStatus:
+      type: string
+      enum: [NEW, IN_PROGRESS, ON_HOLD, COMPLETED, CANCELLED]
+      description: |
+        Job workflow status:
+        - NEW: Initial state
+        - IN_PROGRESS: Work started
+        - ON_HOLD: Temporarily paused
+        - COMPLETED: Successfully finished
+        - CANCELLED: Cancelled/aborted
+
+    JobPriority:
+      type: string
+      enum: [LOW, MEDIUM, HIGH, URGENT]
+      description: |
+        Job priority level:
+        - LOW: Standard timeline
+        - MEDIUM: Default priority
+        - HIGH: Expedited
+        - URGENT: Emergency
+
+    JobWithRelations:
+      allOf:
+        - $ref: '#/components/schemas/Job'
+        - type: object
+          properties:
+            customer:
+              $ref: '#/components/schemas/Customer'
+            assignedTo:
+              $ref: '#/components/schemas/User'
+            qualityChecks:
+              type: array
+              items:
+                $ref: '#/components/schemas/QualityCheck'
+
+    CreateJobRequest:
+      type: object
+      properties:
+        customerId:
+          type: string
+          description: Customer ID
+        serviceType:
+          type: string
+          minLength: 1
+          maxLength: 200
+          example: 'บริการทำความสะอาด'
+        description:
+          type: string
+          minLength: 1
+          maxLength: 1000
+          example: 'ทำความสะอาดออฟฟิศ ชั้น 15'
+        priority:
+          $ref: '#/components/schemas/JobPriority'
+        scheduledAt:
+          type: string
+          format: date-time
+        estimatedDuration:
+          type: integer
+          minimum: 1
+          maximum: 1440
+        assignedToId:
+          type: string
+        notes:
+          type: string
+          maxLength: 1000
+        webhookData:
+          type: object
+        n8nWorkflowId:
+          type: string
+      required:
+        - customerId
+        - serviceType
+        - description
+
+    UpdateJobRequest:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/JobStatus'
+        assignedToId:
+          type: string
+        priority:
+          $ref: '#/components/schemas/JobPriority'
+        scheduledAt:
+          type: string
+          format: date-time
+        notes:
+          type: string
+          maxLength: 1000
+        internalNotes:
+          type: string
+          maxLength: 1000
+        startedAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
+
+    # User Schema
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          pattern: '^c[a-z0-9]{24}$'
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+          example: 'สมหญิง ทำงาน'
+        role:
+          $ref: '#/components/schemas/UserRole'
+        isActive:
+          type: boolean
+        lastLoginAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+
+    UserRole:
+      type: string
+      enum: [ADMIN, OPERATIONS, QC_MANAGER, TRAINING]
+      description: |
+        User roles:
+        - ADMIN: System administrators
+        - OPERATIONS: Operations team members
+        - QC_MANAGER: Quality control managers
+        - TRAINING: Training coordinators
+
+    # Quality Control Schema
+    QualityCheck:
+      type: object
+      properties:
+        id:
+          type: string
+        jobId:
+          type: string
+        checklistId:
+          type: string
+        status:
+          type: string
+          enum: [PENDING, IN_PROGRESS, PASSED, FAILED]
+        completedBy:
+          type: string
+        completedAt:
+          type: string
+          format: date-time
+        notes:
+          type: string
+
+    # Webhook Schemas
+    N8NWebhookRequest:
+      type: object
+      properties:
+        executionId:
+          type: string
+          description: N8N execution ID
+          example: 'n8n-exec-12345'
+        workflowId:
+          type: string
+          description: N8N workflow ID
+          example: 'line-booking-workflow'
+        workflowName:
+          type: string
+          description: N8N workflow name
+          example: 'LINE Booking Automation'
+        status:
+          type: string
+          enum: [success, error, running]
+          description: Workflow execution status
+        startedAt:
+          type: string
+          format: date-time
+        finishedAt:
+          type: string
+          format: date-time
+        data:
+          type: object
+          description: Workflow execution data
+          properties:
+            customer:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: 'สมชาย ใจดี'
+                lineUserId:
+                  type: string
+                  example: 'Uab1234567890abcdef1234567890abcdef'
+                phone:
+                  type: string
+                  example: '+66812345678'
+            booking:
+              type: object
+              properties:
+                serviceType:
+                  type: string
+                  example: 'บริการทำความสะอาด'
+                preferredDate:
+                  type: string
+                  format: date
+                notes:
+                  type: string
+      required:
+        - executionId
+        - workflowId
+        - status
+        - data
+
+    LineWebhookRequest:
+      type: object
+      properties:
+        destination:
+          type: string
+          description: LINE Bot User ID
+        events:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+                enum: [message, follow, unfollow, join, leave, postback]
+              timestamp:
+                type: integer
+                format: int64
+              source:
+                type: object
+                properties:
+                  type:
+                    type: string
+                    enum: [user, group, room]
+                  userId:
+                    type: string
+              message:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  type:
+                    type: string
+                    enum: [text, image, video, audio, file, location, sticker]
+                  text:
+                    type: string
+              replyToken:
+                type: string
+      required:
+        - events
+
+    WebhookResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [success, error]
+        message:
+          type: string
+          example: 'Webhook processed successfully'
+        messageTh:
+          type: string
+          example: 'ประมวลผล webhook สำเร็จ'
+        data:
+          type: object
+          properties:
+            webhookLogId:
+              type: string
+            processedAt:
+              type: string
+              format: date-time
+            results:
+              type: object
+              properties:
+                customerCreated:
+                  type: boolean
+                customerUpdated:
+                  type: boolean
+                jobCreated:
+                  type: boolean
+                jobId:
+                  type: string
+
+    # Authentication Schemas
+    SignInRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          example: 'admin@tinedy.com'
+        password:
+          type: string
+          format: password
+          example: 'SecurePassword123!'
+        remember:
+          type: boolean
+          default: false
+      required:
+        - email
+        - password
+
+    SignInResponse:
+      type: object
+      properties:
+        user:
+          type: object
+          properties:
+            id:
+              type: string
+            email:
+              type: string
+            name:
+              type: string
+              example: 'ผู้ดูแลระบบ'
+            role:
+              $ref: '#/components/schemas/UserRole'
+            permissions:
+              type: array
+              items:
+                type: string
+            lastLoginAt:
+              type: string
+              format: date-time
+        session:
+          type: object
+          properties:
+            expires:
+              type: string
+              format: date-time
+
+    SessionResponse:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
+        expires:
+          type: string
+          format: date-time
+
+    # Common Schemas
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+          minimum: 1
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 100
+        total:
+          type: integer
+          minimum: 0
+        pages:
+          type: integer
+          minimum: 0
+        hasNext:
+          type: boolean
+        hasPrev:
+          type: boolean
+      required:
+        - page
+        - limit
+        - total
+        - pages
+        - hasNext
+        - hasPrev
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message in English
+        errorTh:
+          type: string
+          description: Error message in Thai
+        code:
+          type: string
+          description: Error code for programmatic handling
+        timestamp:
+          type: string
+          format: date-time
+        path:
+          type: string
+          description: API endpoint path
+        details:
+          type: object
+          description: Additional error details
+      required:
+        - error
+        - code
+        - timestamp
+
+  responses:
+    Unauthorized:
+      description: Authentication required or invalid credentials
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "Authentication required"
+            errorTh: "ต้องเข้าสู่ระบบ"
+            code: "AUTHENTICATION_REQUIRED"
+            timestamp: "2024-01-20T10:30:00Z"
+
+    Forbidden:
+      description: Insufficient permissions for this operation
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "Insufficient permissions"
+            errorTh: "สิทธิ์ไม่เพียงพอ"
+            code: "INSUFFICIENT_PERMISSIONS"
+            timestamp: "2024-01-20T10:30:00Z"
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "Resource not found"
+            errorTh: "ไม่พบข้อมูล"
+            code: "NOT_FOUND"
+            timestamp: "2024-01-20T10:30:00Z"
+
+    ValidationError:
+      description: Input validation failed
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/ErrorResponse'
+              - type: object
+                properties:
+                  details:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        field:
+                          type: string
+                        message:
+                          type: string
+                        messageTh:
+                          type: string
+                        value:
+                          type: string
+          example:
+            error: "Validation failed"
+            errorTh: "ข้อมูลไม่ถูกต้อง"
+            code: "VALIDATION_ERROR"
+            timestamp: "2024-01-20T10:30:00Z"
+            details:
+              - field: "phone"
+                message: "Phone number must be in valid Thai format"
+                messageTh: "หมายเลขโทรศัพท์ต้องเป็นรูปแบบไทยที่ถูกต้อง"
+                value: "invalid-phone"
+
+    Conflict:
+      description: Resource conflict (duplicate data)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "LINE User ID already exists"
+            errorTh: "LINE User ID นี้มีอยู่ในระบบแล้ว"
+            code: "DUPLICATE_LINE_USER_ID"
+            timestamp: "2024-01-20T10:30:00Z"
+
+    BusinessRuleViolation:
+      description: Business rule violation
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "Cannot delete customer with active jobs"
+            errorTh: "ไม่สามารถลบลูกค้าที่มีงานที่ยังไม่เสร็จสิ้น"
+            code: "CUSTOMER_HAS_ACTIVE_JOBS"
+            timestamp: "2024-01-20T10:30:00Z"
+
+tags:
+  - name: Customers
+    description: Thai customer management with LINE OA integration
+  - name: Jobs
+    description: Service booking and job workflow management
+  - name: Webhooks
+    description: N8N and LINE OA webhook integration
+  - name: Authentication
+    description: User authentication and session management
+  - name: Users
+    description: Internal team member management
+  - name: Quality Control
+    description: Quality assurance and checklist management

@@ -52,13 +52,22 @@ core_principles:
   - CRITICAL: ALWAYS check current folder structure before starting your story tasks, don't create new working directory if it already exists. Create new one when you're sure it's a brand new project.
   - CRITICAL: ONLY update story file Dev Agent Record sections (checkboxes/Debug Log/Completion Notes/Change Log)
   - CRITICAL: FOLLOW THE develop-story command when the user tells you to implement the story
+  - CRITICAL: AUTO-DELEGATE to specialized sub-agents based on task type for speed and accuracy
+  - AUTO-DELEGATION RULES:
+    - Frontend tasks (React, Next.js, components, UI) → Use /agent nextjs-developer
+    - Security tasks (auth, RBAC, validation, encryption) → Use /agent auth-security
+    - Testing tasks (unit, integration, E2E, coverage) → Use /agent testing-specialist
+    - Integration tasks (APIs, webhooks, N8N, LINE OA) → Use /agent api-integration
+    - Database tasks (schema, migrations, queries) → Use /agent database-architect
+  - DELEGATION WORKFLOW: Identify task type → Delegate to appropriate agent → Review and integrate results → Continue with story
   - Numbered Options - Always use numbered lists when presenting choices to the user
 
 # All commands require * prefix when used (e.g., *help)
 commands:
   - help: Show numbered list of the following commands to allow selection
+  - delegate: Analyze task and auto-delegate to appropriate specialized sub-agent
   - develop-story:
-      - order-of-execution: 'Read (first or next) task→Implement Task and its subtasks→Write tests→Execute validations→Only if ALL pass, then update the task checkbox with [x]→Update story section File List to ensure it lists and new or modified or deleted source file→repeat order-of-execution until complete'
+      - order-of-execution: 'Read (first or next) task→Analyze task type and auto-delegate to specialized sub-agent if applicable→Implement Task and its subtasks (with sub-agent help)→Write tests→Execute validations→Only if ALL pass, then update the task checkbox with [x]→Update story section File List to ensure it lists and new or modified or deleted source file→repeat order-of-execution until complete'
       - story-file-updates-ONLY:
           - CRITICAL: ONLY UPDATE THE STORY FILE WITH UPDATES TO SECTIONS INDICATED BELOW. DO NOT MODIFY ANY OTHER SECTIONS.
           - CRITICAL: You are ONLY authorized to edit these specific sections of story files - Tasks / Subtasks Checkboxes, Dev Agent Record section and all its subsections, Agent Model Used, Debug Log References, Completion Notes List, File List, Change Log, Status

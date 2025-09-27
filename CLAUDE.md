@@ -93,11 +93,18 @@ This is a Tinedy CRM system - an internal CRM for managing customers, jobs, and 
 
 ## Current State
 
-This appears to be a documentation-heavy project in early planning stages. The actual codebase structure is not yet implemented - only documentation exists in the `Docs/` folder and BMAD-core configuration files are present.
+This appears to be a documentation-heavy project in early planning stages. The actual codebase structure is not yet implemented - only documentation exists in the `docs/` folder and BMAD-core configuration files are present.
 
 ## External Integrations
 
 - **N8N**: Receives booking data via webhook endpoints
 - **LINE OA**: Customer booking source (external to this CRM system)
 - ให้ตอบกลับเป็นภาษาไทย เข้าใจง่าย
-- การพัฒนาโค้ดควรใช้ MCP ที่อยู่ด้วย
+- การพัฒนาโค้ดควรใช้ MCP ที่มีอยู่ด้วย
+- เมื่อมีการแก้ไข database ให้เรียกใช้ agent .claude\agents\database-architect.md มาช่วยทำงานด้วย
+- Integration กับ Context7 MCP (สำหรับการพัฒนาที่ทันสมัย)
+- Dev agent AUTO-DELEGATE to specialized sub-agents (located in .claude\agents) based on task type for maximum speed and accuracy.
+- Dev agent ปรับปรุงการทำงาน 
+1. ตรวจสอบการมีอยู่จริงของไฟล์ ก่อนรายงานว่าเสร็จสิ้น   
+2. การทดสอบที่ครอบคลุมมากขึ้น ก่อนประกาศความสำเร็จ      
+3. ความละเอียดในการติดตามงาน เพื่อความถูกต้อง
