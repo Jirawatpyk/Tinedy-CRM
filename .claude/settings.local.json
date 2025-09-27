@@ -57,7 +57,12 @@
       "Bash(node:*)",
       "Bash(pnpm store prune:*)",
       "Bash(pnpm db:generate:*)",
-      "Bash(pnpm dlx prisma generate:*)"
+      "Bash(pnpm dlx prisma generate:*)",
+      "Bash(pkill:*)",
+      "Bash(taskkill:*)",
+      "Bash(PORT=3000 npm run dev)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)"
     ],
     "deny": [],
     "ask": []
