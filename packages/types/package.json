@@ -1,0 +1,21 @@
+{
+  "name": "@tinedy/types",
+  "version": "1.0.0",
+  "description": "Shared TypeScript types for Tinedy CRM",
+  "main": "index.ts",
+  "types": "index.ts",
+  "private": true,
+  "exports": {
+    ".": {
+      "types": "./index.ts",
+      "default": "./index.ts"
+    }
+  },
+  "scripts": {
+    "type-check": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  }
+}
