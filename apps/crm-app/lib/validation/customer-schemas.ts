@@ -35,7 +35,7 @@ export const customerCreateSchema = z.object({
   contactChannel: z
     .enum(['LINE', 'Phone', 'Email', 'Facebook', 'Walk-in'])
     .refine(
-      val => ['LINE', 'Phone', 'Email', 'Facebook', 'Walk-in'].includes(val),
+      (val) => ['LINE', 'Phone', 'Email', 'Facebook', 'Walk-in'].includes(val),
       {
         message:
           'Contact channel must be one of: LINE, Phone, Email, Facebook, Walk-in',
@@ -72,7 +72,7 @@ export const customerUpdateSchema = z.object({
   contactChannel: z
     .enum(['LINE', 'Phone', 'Email', 'Facebook', 'Walk-in'])
     .refine(
-      val => ['LINE', 'Phone', 'Email', 'Facebook', 'Walk-in'].includes(val),
+      (val) => ['LINE', 'Phone', 'Email', 'Facebook', 'Walk-in'].includes(val),
       {
         message:
           'Contact channel must be one of: LINE, Phone, Email, Facebook, Walk-in',
