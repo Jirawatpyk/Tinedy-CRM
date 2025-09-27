@@ -37,14 +37,14 @@
     "db:seed": "cd apps/crm-app && tsx prisma/seed.ts",
     "db:studio": "cd apps/crm-app && prisma studio",
     "db:validate": "node scripts/validate-migration.js",
-    "clean": "rm -rf .next node_modules coverage test-results",
-    "postinstall": "cd apps/crm-app && prisma generate"
+    "clean": "rm -rf .next node_modules coverage test-results"
   },
   "prisma": {
     "seed": "cd apps/crm-app && tsx prisma/seed.ts"
   },
   "devDependencies": {
     "@jest/globals": "^29.7.0",
+    "@prisma/client": "^5.9.1",
     "@types/dompurify": "^3.2.0",
     "@types/jest": "^29.5.12",
     "@types/node": "^20.11.16",
@@ -60,13 +60,13 @@
     "jest-junit": "^16.0.0",
     "jest-watch-typeahead": "^2.2.2",
     "prettier": "^3.0.0",
-    "prisma": "^5.9.1",
+    "prisma": "^6.16.2",
     "shadcn": "^3.3.1",
     "ts-jest": "^29.1.2",
     "tsx": "^4.7.1",
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "@prisma/client": "^5.9.1"
+    "@prisma/client": "^6.16.2"
   }
 }

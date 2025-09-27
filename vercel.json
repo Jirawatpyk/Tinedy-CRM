@@ -1,7 +1,7 @@
 {
-  "buildCommand": "pnpm install --frozen-lockfile && cd apps/crm-app && pnpm run vercel-build",
+  "buildCommand": "pnpm --filter crm-app run vercel-build",
   "outputDirectory": "apps/crm-app/.next",
   "installCommand": "pnpm install --frozen-lockfile",
-  "devCommand": "cd apps/crm-app && pnpm dev",
+  "devCommand": "pnpm --filter crm-app dev",
   "ignoreCommand": "git diff --quiet HEAD^ HEAD"
 }
