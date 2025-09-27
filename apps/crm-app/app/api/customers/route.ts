@@ -2,10 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/auth'
 import { prisma } from '@/lib/db'
 import { UserRole } from '@prisma/client'
-import { customerCreateSchema, customerQuerySchema } from '@/lib/validation/customer-schemas'
-import { withErrorHandling, checkRateLimit } from '@/lib/utils/error-handler'
 
-export const GET = withErrorHandling(async (request: NextRequest) => { {
+export async function GET(request: NextRequest) {
+  try {
     // ตรวจสอบ authentication
     const session = await auth()
     if (!session?.user) {
@@ -147,60 +146,39 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Parse and validate request body
+    // Parse request body
     const body = await request.json()
+    const { name, phone, address, contactChannel } = body
 
-    // Sanitize input data
-    const sanitizationResult = sanitizeCustomerInput(body)
-    if (sanitizationResult.errors.length > 0) {
+    // Validate required fields
+    const errors: Record<string, string> = {}
+
+    if (!name || typeof name !== 'string' || name.trim().length === 0) {
+      errors.name = 'Name is required'
+    }
+
+    if (!phone || typeof phone !== 'string' || phone.trim().length === 0) {
+      errors.phone = 'Phone number is required'
+    }
+
+    if (
+      !contactChannel ||
+      typeof contactChannel !== 'string' ||
+      contactChannel.trim().length === 0
+    ) {
+      errors.contactChannel = 'Contact channel is required'
+    }
+
+    if (Object.keys(errors).length > 0) {
       return NextResponse.json(
-        {
-          error: 'Input validation failed',
-          errors: sanitizationResult.errors.reduce((acc, err) => {
-            const field = err.includes('Name') ? 'name' :
-                         err.includes('Phone') ? 'phone' :
-                         err.includes('Address') ? 'address' : 'contactChannel'
-            acc[field] = err
-            return acc
-          }, {} as Record<string, string>)
-        },
+        { error: 'Validation failed', errors },
         { status: 400 }
       )
     }
 
-    const { name, phone, address, contactChannel } = sanitizationResult.data
-
-    // Zod schema validation
-    const customerSchema = z.object({
-      name: z.string().min(1, 'Name is required').max(100, 'Name too long'),
-      phone: z.string().min(1, 'Phone number is required').regex(/^\+66[0-9]{9}$/, 'Invalid Thai phone format'),
-      address: z.string().max(500, 'Address too long').optional(),
-      contactChannel: z.enum(['LINE', 'Phone', 'Email', 'Facebook', 'Walk-in'], {
-        errorMap: () => ({ message: 'Invalid contact channel' })
-      })
-    })
-
-    try {
-      customerSchema.parse({ name, phone, address, contactChannel })
-    } catch (zodError) {
-      if (zodError instanceof z.ZodError) {
-        const fieldErrors = zodError.errors.reduce((acc, err) => {
-          if (err.path[0]) {
-            acc[err.path[0] as string] = err.message
-          }
-          return acc
-        }, {} as Record<string, string>)
-
-        return NextResponse.json(
-          { error: 'Validation failed', errors: fieldErrors },
-          { status: 400 }
-        )
-      }
-    }
-
-    // Check phone uniqueness (phone is already sanitized)
+    // Check phone uniqueness
     const existingCustomer = await prisma.customer.findUnique({
-      where: { phone },
+      where: { phone: phone.trim() },
     })
 
     if (existingCustomer) {
@@ -213,13 +191,13 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Create customer with sanitized data
+    // Create customer
     const customer = await prisma.customer.create({
       data: {
-        name,
-        phone,
-        address: address || null,
-        contactChannel,
+        name: name.trim(),
+        phone: phone.trim(),
+        address: address?.trim() || null,
+        contactChannel: contactChannel.trim(),
       },
     })
 
