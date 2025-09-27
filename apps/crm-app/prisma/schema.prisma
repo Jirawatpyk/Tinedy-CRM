@@ -137,15 +137,20 @@ model Job {
   // Indexes สำหรับ Performance
   @@index([customerId])
   @@index([status])
-  @@index([assignedToId])
-  @@index([scheduledAt])
+  @@index([assignedUserId])
+  @@index([scheduledDate]) // สำหรับการค้นหาตามวันที่นัดหมาย
   @@index([createdAt])
   @@index([priority])
-  @@index([serviceType])
+  @@index([serviceType]) // สำหรับการกรองตามประเภทบริการ
+  @@index([price]) // สำหรับการค้นหาตามราคา
+
   // Composite indexes สำหรับ query ที่ซับซ้อน
-  @@index([customerId, status])
-  @@index([assignedToId, status])
-  @@index([status, priority])
+  @@index([customerId, status]) // งานของลูกค้าตามสถานะ
+  @@index([assignedUserId, status]) // งานที่มอบหมายตามสถานะ
+  @@index([status, priority]) // งานตามสถานะและลำดับความสำคัญ
+  @@index([serviceType, status]) // งานตามประเภทบริการและสถานะ
+  @@index([scheduledDate, status]) // งานตามวันที่นัดและสถานะ
+  @@index([customerId, serviceType]) // งานของลูกค้าตามประเภทบริการ
   @@map("jobs")
 }
 
@@ -160,7 +165,7 @@ model User {
   updatedAt DateTime @updatedAt
 
   // Relations
-  assignedJobs Job[]
+  assignedJobs Job[] @relation("AssignedJobs")
 
   // Indexes
   @@index([role])
