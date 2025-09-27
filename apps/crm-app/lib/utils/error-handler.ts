@@ -51,8 +51,8 @@ export function handleApiError(error: any): NextResponse {
 
   // Zod validation errors
   if (error instanceof ZodError) {
-    const fieldErrors = error.errors.reduce(
-      (acc, err) => {
+    const fieldErrors = error.issues.reduce(
+      (acc: Record<string, string>, err: any) => {
         if (err.path[0]) {
           acc[err.path[0] as string] = err.message
         }

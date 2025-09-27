@@ -119,25 +119,6 @@ export async function disconnectDatabase() {
  * =============================================================================
  */
 
-/**
- * Helper สำหรับการทำ transaction ที่ซับซ้อน
- */
-export async function withTransaction<T>(
-  callback: (
-    tx: Omit<
-      PrismaClient,
-      '$connect' | '$disconnect' | '$on' | '$transaction' | '$use'
-    >
-  ) => Promise<T>
-): Promise<T> {
-  return prisma.$transaction(callback, {
-    // Transaction timeout (default: 5000ms)
-    timeout: 10000,
-
-    // Isolation level สำหรับ data consistency
-    isolationLevel: 'ReadCommitted',
-  })
-}
 
 /**
  * =============================================================================
@@ -195,7 +176,7 @@ export async function checkMigrationStatus() {
  */
 export function enableQueryLogging() {
   if (process.env.NODE_ENV === 'development') {
-    prisma.$on('query' as any, (e: any) => {
+    prisma.$on('query', (e: any) => {
       console.log(`Query: ${e.query}`)
       console.log(`Duration: ${e.duration}ms`)
       console.log(`Params: ${e.params}`)
