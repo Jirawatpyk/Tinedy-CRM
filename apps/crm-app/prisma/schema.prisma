@@ -20,12 +20,17 @@ enum CustomerStatus {
   BLOCKED   // ลูกค้าที่ถูกบล็อก
 }
 
+enum ServiceType {
+  CLEANING  // บริการทำความสะอาด
+  TRAINING  // บริการฝึกอบรม
+}
+
 enum JobStatus {
   NEW         // งานใหม่ที่ยังไม่ได้รับมอบหมาย
+  ASSIGNED    // งานที่ถูกมอบหมายแล้ว
   IN_PROGRESS // งานที่กำลังดำเนินการ
-  COMPLETED   // งานที่เสร็จแล้ว
+  DONE        // งานที่เสร็จเสร้นแล้ว
   CANCELLED   // งานที่ยกเลิก
-  ON_HOLD     // งานที่หยุดชั่วคราว
 }
 
 enum Priority {
