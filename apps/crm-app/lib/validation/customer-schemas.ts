@@ -12,13 +12,13 @@ export const customerCreateSchema = z.object({
     .min(1, 'Name is required')
     .max(100, 'Name must be less than 100 characters')
     .regex(thaiNameRegex, 'Name contains invalid characters')
-    .transform(str => str.trim()),
+    .transform((str) => str.trim()),
 
   phone: z
     .string()
     .min(1, 'Phone number is required')
     .regex(thaiPhoneRegex, 'Invalid Thai phone number format')
-    .transform(phone => {
+    .transform((phone) => {
       // Normalize phone format to +66 format
       if (phone.startsWith('0')) {
         return '+66' + phone.substring(1)
@@ -30,12 +30,14 @@ export const customerCreateSchema = z.object({
     .string()
     .max(500, 'Address must be less than 500 characters')
     .optional()
-    .transform(str => str?.trim() || null),
+    .transform((str) => str?.trim() || null),
 
-  contactChannel: z
-    .enum(['LINE', 'Phone', 'Email', 'Facebook', 'Walk-in'], {
-      errorMap: () => ({ message: 'Contact channel must be one of: LINE, Phone, Email, Facebook, Walk-in' })
-    })
+  contactChannel: z.enum(['LINE', 'Phone', 'Email', 'Facebook', 'Walk-in'], {
+    errorMap: () => ({
+      message:
+        'Contact channel must be one of: LINE, Phone, Email, Facebook, Walk-in',
+    }),
+  }),
 })
 
 export const customerUpdateSchema = z.object({
@@ -44,13 +46,13 @@ export const customerUpdateSchema = z.object({
     .min(1, 'Name is required')
     .max(100, 'Name must be less than 100 characters')
     .regex(thaiNameRegex, 'Name contains invalid characters')
-    .transform(str => str.trim())
+    .transform((str) => str.trim())
     .optional(),
 
   phone: z
     .string()
     .regex(thaiPhoneRegex, 'Invalid Thai phone number format')
-    .transform(phone => {
+    .transform((phone) => {
       if (phone.startsWith('0')) {
         return '+66' + phone.substring(1)
       }
@@ -61,14 +63,17 @@ export const customerUpdateSchema = z.object({
   address: z
     .string()
     .max(500, 'Address must be less than 500 characters')
-    .transform(str => str?.trim() || null)
+    .transform((str) => str?.trim() || null)
     .optional(),
 
   contactChannel: z
     .enum(['LINE', 'Phone', 'Email', 'Facebook', 'Walk-in'], {
-      errorMap: () => ({ message: 'Contact channel must be one of: LINE, Phone, Email, Facebook, Walk-in' })
+      errorMap: () => ({
+        message:
+          'Contact channel must be one of: LINE, Phone, Email, Facebook, Walk-in',
+      }),
     })
-    .optional()
+    .optional(),
 })
 
 export const customerQuerySchema = z.object({
@@ -76,12 +81,14 @@ export const customerQuerySchema = z.object({
   status: z.enum(['ACTIVE', 'INACTIVE', 'BLOCKED']).optional(),
   page: z.coerce.number().int().min(1).max(1000).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(10),
-  sortBy: z.enum(['name', 'phone', 'createdAt', 'updatedAt', 'status']).default('createdAt'),
-  sortOrder: z.enum(['asc', 'desc']).default('desc')
+  sortBy: z
+    .enum(['name', 'phone', 'createdAt', 'updatedAt', 'status'])
+    .default('createdAt'),
+  sortOrder: z.enum(['asc', 'desc']).default('desc'),
 })
 
 export const customerIdSchema = z.object({
-  id: z.string().uuid('Invalid customer ID format')
+  id: z.string().uuid('Invalid customer ID format'),
 })
 
 // Type exports for TypeScript

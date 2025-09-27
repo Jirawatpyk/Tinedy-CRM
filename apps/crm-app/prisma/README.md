@@ -53,6 +53,7 @@ npm run db:studio
 ### Core Entities (หน่วยงานหลัก)
 
 #### 👥 Customer (ลูกค้า)
+
 ```sql
 customers
 ├── id (UUID, Primary Key)
@@ -66,6 +67,7 @@ customers
 ```
 
 #### 📋 Job (งาน/บุ๊คกิ้ง)
+
 ```sql
 jobs
 ├── id (CUID, Primary Key)
@@ -84,6 +86,7 @@ jobs
 ```
 
 #### 👤 User (ผู้ใช้งาน)
+
 ```sql
 users
 ├── id (CUID, Primary Key)
@@ -99,21 +102,25 @@ users
 ### Quality Control System
 
 #### ✅ QualityCheck & QualityChecklist
+
 - `quality_checks`: การตรวจสอบคุณภาพแต่ละงาน
 - `quality_checklists`: เทมเพลตเช็คลิสต์มาตรฐาน
 
 ### Training System
 
 #### 📚 TrainingWorkflow
+
 - ติดตามสถานะการฝึกอบรมของแต่ละงาน
 
 ### Integration System
 
 #### 🔗 WebhookLog & FailedWebhook
+
 - บันทึกข้อมูลจาก N8N และ LINE OA
 - จัดการ webhook ที่ล้มเหลว
 
 #### 📝 AuditLog
+
 - บันทึกการเปลี่ยนแปลงข้อมูลสำคัญ
 
 ## 🔧 Prisma Commands
@@ -171,22 +178,26 @@ npm run db:setup
 ระบบจะสร้างข้อมูลเริ่มต้นดังนี้:
 
 ### 👥 ผู้ใช้งาน (Users)
+
 - **Admin**: admin@tinedy.com / admin123
 - **Operations**: operations1@tinedy.com / ops123
 - **Training**: training@tinedy.com / training123
 - **QC Manager**: qc@tinedy.com / qc123
 
 ### 🏠 ลูกค้าตัวอย่าง (Sample Customers)
+
 - คุณสมชาย ใจดี (LINE OA)
 - คุณมาลี รักงาน (LINE OA)
 - บริษัท ABC จำกัด (PHONE)
 
 ### 📋 งานตัวอย่าง (Sample Jobs)
+
 - ทำความสะอาดบ้าน (NEW)
 - บริการซ่อมแซม (IN_PROGRESS)
 - บริการดูแลสวน (COMPLETED)
 
 ### ✅ Quality Checklists
+
 - เช็คลิสต์บริการทั่วไป
 - เช็คลิสต์บริการทำความสะอาด
 
@@ -202,26 +213,26 @@ const customers = await prisma.customer.findMany({
   where: {
     name: {
       contains: 'สมชาย',
-      mode: 'insensitive'
+      mode: 'insensitive',
     },
-    status: 'ACTIVE'
-  }
+    status: 'ACTIVE',
+  },
 })
 
 // ค้นหางานพร้อมข้อมูลลูกค้า
 const jobs = await prisma.job.findMany({
   include: {
     customer: true,
-    assignedTo: true
+    assignedTo: true,
   },
   where: {
     status: {
-      in: ['NEW', 'IN_PROGRESS']
-    }
+      in: ['NEW', 'IN_PROGRESS'],
+    },
   },
   orderBy: {
-    priority: 'desc'
-  }
+    priority: 'desc',
+  },
 })
 
 // อัปเดตสถานะงาน
@@ -229,8 +240,8 @@ const updatedJob = await prisma.job.update({
   where: { id: jobId },
   data: {
     status: 'COMPLETED',
-    completedAt: new Date()
-  }
+    completedAt: new Date(),
+  },
 })
 ```
 
@@ -259,15 +270,15 @@ Schema ได้ออกแบบ indexes สำหรับ queries ที่�
 ```typescript
 // เร็ว - ใช้ index
 const customer = await prisma.customer.findUnique({
-  where: { phone: '0812345678' }
+  where: { phone: '0812345678' },
 })
 
 // เร็ว - ใช้ composite index
 const jobs = await prisma.job.findMany({
   where: {
     customerId: '...',
-    status: 'NEW'
-  }
+    status: 'NEW',
+  },
 })
 ```
 
@@ -279,16 +290,16 @@ const customers = await prisma.customer.findMany({
   select: {
     id: true,
     name: true,
-    phone: true
-  }
+    phone: true,
+  },
 })
 
 // ระวัง - N+1 query problem
 const jobs = await prisma.job.findMany({
   include: {
-    customer: true,  // ใช้ include แทน separate queries
-    assignedTo: true
-  }
+    customer: true, // ใช้ include แทน separate queries
+    assignedTo: true,
+  },
 })
 ```
 
@@ -300,11 +311,11 @@ const jobs = await prisma.job.findMany({
   take: 20,
   skip: 1,
   cursor: {
-    id: lastJobId
+    id: lastJobId,
   },
   orderBy: {
-    createdAt: 'desc'
-  }
+    createdAt: 'desc',
+  },
 })
 ```
 

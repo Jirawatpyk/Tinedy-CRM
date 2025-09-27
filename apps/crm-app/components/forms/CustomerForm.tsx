@@ -188,7 +188,12 @@ export function CustomerForm({ customer, mode, onSuccess }: CustomerFormProps) {
                 Cancel
               </Button>
               <Button type="submit" disabled={isLoading}>
-                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" data-testid="loading-spinner" />}
+                {isLoading && (
+                  <Loader2
+                    className="mr-2 h-4 w-4 animate-spin"
+                    data-testid="loading-spinner"
+                  />
+                )}
                 {mode === 'create' ? 'Create Customer' : 'Update Customer'}
               </Button>
             </div>

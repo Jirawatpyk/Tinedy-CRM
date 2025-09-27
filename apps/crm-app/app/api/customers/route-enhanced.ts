@@ -2,8 +2,15 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/auth'
 import { prisma } from '@/lib/db'
 import { UserRole } from '@prisma/client'
-import { customerCreateSchema, customerQuerySchema } from '@/lib/validation/customer-schemas'
-import { withErrorHandling, checkRateLimit, CustomApiError } from '@/lib/utils/error-handler'
+import {
+  customerCreateSchema,
+  customerQuerySchema,
+} from '@/lib/validation/customer-schemas'
+import {
+  withErrorHandling,
+  checkRateLimit,
+  CustomApiError,
+} from '@/lib/utils/error-handler'
 
 export const GET = withErrorHandling(async (request: NextRequest) => {
   // ตรวจสอบ authentication
@@ -28,7 +35,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
     page: searchParams.get('page') || '1',
     limit: searchParams.get('limit') || '10',
     sortBy: searchParams.get('sortBy') || 'createdAt',
-    sortOrder: searchParams.get('sortOrder') || 'desc'
+    sortOrder: searchParams.get('sortOrder') || 'desc',
   }
 
   const validatedQuery = customerQuerySchema.parse(queryData)

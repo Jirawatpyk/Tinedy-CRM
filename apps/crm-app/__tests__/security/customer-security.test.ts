@@ -9,7 +9,7 @@ describe('Customer Security Tests', () => {
         name: '<script>alert("xss")</script>John Doe',
         phone: '0812345678',
         address: '<iframe src="javascript:alert(1)"></iframe>123 Main St',
-        contactChannel: 'LINE'
+        contactChannel: 'LINE',
       }
 
       const result = sanitizeCustomerInput(maliciousInput)
@@ -24,7 +24,7 @@ describe('Customer Security Tests', () => {
         name: "Robert'; DROP TABLE customers; --",
         phone: "0812345678' OR '1'='1",
         address: "123 Main'; DELETE FROM users; --",
-        contactChannel: 'LINE'
+        contactChannel: 'LINE',
       }
 
       const result = sanitizeCustomerInput(sqlInjectionInput)
@@ -41,7 +41,7 @@ describe('Customer Security Tests', () => {
         { input: '66812345678', expected: '+66812345678' },
         { input: '+66812345678', expected: '+66812345678' },
         { input: '081-234-5678', expected: '+66812345678' },
-        { input: '081 234 5678', expected: '+66812345678' }
+        { input: '081 234 5678', expected: '+66812345678' },
       ]
 
       phoneTests.forEach(({ input, expected }) => {
@@ -56,7 +56,7 @@ describe('Customer Security Tests', () => {
 
       const result = sanitizeCustomerInput({
         name: longName,
-        address: longAddress
+        address: longAddress,
       })
 
       expect(result.errors).toContain('Name too long (max 100 characters)')
@@ -65,14 +65,20 @@ describe('Customer Security Tests', () => {
 
     it('should validate contact channel whitelist', () => {
       const validChannels = ['LINE', 'Phone', 'Email', 'Facebook', 'Walk-in']
-      const invalidChannels = ['Twitter', 'Instagram', 'TikTok', '<script>', 'WhatsApp']
+      const invalidChannels = [
+        'Twitter',
+        'Instagram',
+        'TikTok',
+        '<script>',
+        'WhatsApp',
+      ]
 
-      validChannels.forEach(channel => {
+      validChannels.forEach((channel) => {
         const result = sanitizeCustomerInput({ contactChannel: channel })
         expect(result.errors).toHaveLength(0)
       })
 
-      invalidChannels.forEach(channel => {
+      invalidChannels.forEach((channel) => {
         const result = sanitizeCustomerInput({ contactChannel: channel })
         expect(result.errors.length).toBeGreaterThan(0)
       })
@@ -87,15 +93,15 @@ describe('Customer Security Tests', () => {
         '+66123', // Too short Thai
         'not-a-phone', // Text
         '+661234567890', // Too long
-        '+66012345678' // Invalid Thai mobile prefix
+        '+66012345678', // Invalid Thai mobile prefix
       ]
 
-      invalidPhones.forEach(phone => {
+      invalidPhones.forEach((phone) => {
         expect(() => {
           customerCreateSchema.parse({
             name: 'Test User',
             phone,
-            contactChannel: 'LINE'
+            contactChannel: 'LINE',
           })
         }).toThrow()
       })
@@ -108,15 +114,15 @@ describe('Customer Security Tests', () => {
         'User#123',
         'User$pecial',
         'User%20Name',
-        'User&amp;Name'
+        'User&amp;Name',
       ]
 
-      invalidNames.forEach(name => {
+      invalidNames.forEach((name) => {
         expect(() => {
           customerCreateSchema.parse({
             name,
             phone: '+66812345678',
-            contactChannel: 'LINE'
+            contactChannel: 'LINE',
           })
         }).toThrow()
       })
@@ -130,15 +136,15 @@ describe('Customer Security Tests', () => {
         'นาย A. Johnson',
         "O'Connor", // Irish names with apostrophe
         'Jean-Pierre', // French names with hyphen
-        'Dr. สมชาย'
+        'Dr. สมชาย',
       ]
 
-      validNames.forEach(name => {
+      validNames.forEach((name) => {
         expect(() => {
           customerCreateSchema.parse({
             name,
             phone: '+66812345678',
-            contactChannel: 'LINE'
+            contactChannel: 'LINE',
           })
         }).not.toThrow()
       })
@@ -147,14 +153,14 @@ describe('Customer Security Tests', () => {
     it('should transform and normalize phone numbers', () => {
       const phoneTransforms = [
         { input: '0812345678', expected: '+66812345678' },
-        { input: '+66812345678', expected: '+66812345678' }
+        { input: '+66812345678', expected: '+66812345678' },
       ]
 
       phoneTransforms.forEach(({ input, expected }) => {
         const result = customerCreateSchema.parse({
           name: 'Test User',
           phone: input,
-          contactChannel: 'LINE'
+          contactChannel: 'LINE',
         })
         expect(result.phone).toBe(expected)
       })
@@ -165,7 +171,7 @@ describe('Customer Security Tests', () => {
         name: '  John Doe  ',
         phone: '0812345678',
         address: '  123 Main Street  ',
-        contactChannel: 'LINE'
+        contactChannel: 'LINE',
       })
 
       expect(result.name).toBe('John Doe')
@@ -210,7 +216,7 @@ describe('Customer Security Tests', () => {
       const maliciousData = {
         name: '<img src=x onerror=alert(1)>',
         address: '<svg onload=alert(1)>',
-        contactChannel: 'LINE'
+        contactChannel: 'LINE',
       }
 
       const result = sanitizeCustomerInput(maliciousData)
@@ -230,13 +236,13 @@ describe('Customer Security Tests', () => {
         'vbscript:',
         'onload=',
         'onerror=',
-        'onclick='
+        'onclick=',
       ]
 
-      dangerousPatterns.forEach(pattern => {
+      dangerousPatterns.forEach((pattern) => {
         const result = sanitizeCustomerInput({
           name: `Test ${pattern} User`,
-          address: `Address with ${pattern} content`
+          address: `Address with ${pattern} content`,
         })
 
         expect(result.data.name).not.toContain(pattern)
