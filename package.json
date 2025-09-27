@@ -39,9 +39,6 @@
     "db:validate": "node scripts/validate-migration.js",
     "clean": "rm -rf .next node_modules coverage test-results"
   },
-  "prisma": {
-    "seed": "cd apps/crm-app && tsx prisma/seed.ts"
-  },
   "devDependencies": {
     "@jest/globals": "^29.7.0",
     "@prisma/client": "^5.9.1",
