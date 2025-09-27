@@ -57,7 +57,9 @@
       "Bash(node:*)",
       "Bash(pnpm store prune:*)",
       "Bash(pnpm db:generate:*)",
-      "Bash(pnpm dlx prisma generate:*)"
+      "Bash(pnpm dlx prisma generate:*)",
+      "Bash(pnpm db:migrate:*)",
+      "Bash(pnpm db:push:*)"
     ],
     "deny": [],
     "ask": []
