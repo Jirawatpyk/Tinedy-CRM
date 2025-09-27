@@ -87,7 +87,7 @@ export default function EditCustomerPage() {
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground mb-4">
-              The customer you're looking for could not be found.
+              The customer you&apos;re looking for could not be found.
             </p>
             <Button variant="outline" asChild>
               <Link href="/customers">Back to Customers</Link>
