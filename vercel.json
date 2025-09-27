@@ -1,6 +1,5 @@
 {
-  "framework": "nextjs",
-  "buildCommand": "cd apps/crm-app && npm run build",
+  "buildCommand": "pnpm install && pnpm --filter crm-app build",
   "outputDirectory": "apps/crm-app/.next",
-  "installCommand": "cd apps/crm-app && npm install"
+  "installCommand": "pnpm install"
 }
