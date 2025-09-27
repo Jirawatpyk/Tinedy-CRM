@@ -53,7 +53,9 @@ describe('CustomerForm', () => {
       await waitFor(() => {
         expect(screen.getByText('Name is required')).toBeInTheDocument()
         expect(screen.getByText('Phone number is required')).toBeInTheDocument()
-        expect(screen.getByText('Contact channel is required')).toBeInTheDocument()
+        expect(
+          screen.getByText('Contact channel is required')
+        ).toBeInTheDocument()
       })
     })
 
@@ -125,7 +127,9 @@ describe('CustomerForm', () => {
       fireEvent.click(screen.getByText('Create Customer'))
 
       await waitFor(() => {
-        expect(screen.getByText('Phone number already exists')).toBeInTheDocument()
+        expect(
+          screen.getByText('Phone number already exists')
+        ).toBeInTheDocument()
       })
     })
 
@@ -229,7 +233,10 @@ describe('CustomerForm', () => {
       ;(fetch as jest.Mock).mockImplementation(
         () =>
           new Promise((resolve) => {
-            setTimeout(() => resolve({ ok: true, json: () => mockCustomer }), 100)
+            setTimeout(
+              () => resolve({ ok: true, json: () => mockCustomer }),
+              100
+            )
           })
       )
 

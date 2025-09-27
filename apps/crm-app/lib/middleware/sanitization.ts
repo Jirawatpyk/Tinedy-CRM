@@ -106,8 +106,13 @@ export function sanitizeCustomerInput(input: any): CustomerSanitizationResult {
     } else {
       data.contactChannel = sanitizeString(input.contactChannel)
       const allowedChannels = ['LINE', 'Phone', 'Email', 'Facebook', 'Walk-in']
-      if (data.contactChannel && !allowedChannels.includes(data.contactChannel)) {
-        errors.push(`Contact channel must be one of: ${allowedChannels.join(', ')}`)
+      if (
+        data.contactChannel &&
+        !allowedChannels.includes(data.contactChannel)
+      ) {
+        errors.push(
+          `Contact channel must be one of: ${allowedChannels.join(', ')}`
+        )
       }
     }
   }

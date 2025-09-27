@@ -13,9 +13,9 @@ test.describe('Customer Management Workflow', () => {
               id: '1',
               email: 'admin@test.com',
               name: 'Test Admin',
-              role: 'ADMIN'
-            }
-          })
+              role: 'ADMIN',
+            },
+          }),
         })
       } else {
         await route.continue()
@@ -39,15 +39,15 @@ test.describe('Customer Management Workflow', () => {
               totalCount: 0,
               limit: 10,
               hasNextPage: false,
-              hasPrevPage: false
+              hasPrevPage: false,
             },
             filters: {
               query: null,
               status: null,
               sortBy: 'createdAt',
-              sortOrder: 'desc'
-            }
-          })
+              sortOrder: 'desc',
+            },
+          }),
         })
       } else if (method === 'POST' && url.includes('/api/customers')) {
         const body = await route.request().postDataJSON()
@@ -62,8 +62,8 @@ test.describe('Customer Management Workflow', () => {
             contactChannel: body.contactChannel,
             status: 'ACTIVE',
             createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
-          })
+            updatedAt: new Date().toISOString(),
+          }),
         })
       } else {
         await route.continue()
@@ -122,7 +122,7 @@ test.describe('Customer Management Workflow', () => {
         await route.fulfill({
           status: 500,
           contentType: 'application/json',
-          body: JSON.stringify({ error: 'Internal server error' })
+          body: JSON.stringify({ error: 'Internal server error' }),
         })
       } else {
         await route.continue()
@@ -152,8 +152,8 @@ test.describe('Customer Management Workflow', () => {
           contentType: 'application/json',
           body: JSON.stringify({
             error: 'Validation failed',
-            errors: { phone: 'Phone number already exists' }
-          })
+            errors: { phone: 'Phone number already exists' },
+          }),
         })
       } else {
         await route.continue()
@@ -191,8 +191,8 @@ test.describe('Customer Management Workflow', () => {
             contactChannel: 'LINE',
             status: 'ACTIVE',
             createdAt: '2023-01-01T00:00:00Z',
-            updatedAt: '2023-01-01T00:00:00Z'
-          })
+            updatedAt: '2023-01-01T00:00:00Z',
+          }),
         })
       } else if (route.request().method() === 'PATCH') {
         const body = await route.request().postDataJSON()
@@ -202,8 +202,8 @@ test.describe('Customer Management Workflow', () => {
           body: JSON.stringify({
             id: customerId,
             ...body,
-            updatedAt: new Date().toISOString()
-          })
+            updatedAt: new Date().toISOString(),
+          }),
         })
       } else {
         await route.continue()
@@ -235,7 +235,7 @@ test.describe('Customer Management Workflow', () => {
       await route.fulfill({
         status: 404,
         contentType: 'application/json',
-        body: JSON.stringify({ error: 'Customer not found' })
+        body: JSON.stringify({ error: 'Customer not found' }),
       })
     })
 

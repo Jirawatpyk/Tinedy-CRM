@@ -20,9 +20,10 @@ declare global {
 const createPrismaClient = () => {
   return new PrismaClient({
     // Logging Configuration
-    log: process.env.NODE_ENV === 'development'
-      ? ['query', 'info', 'warn', 'error']
-      : ['error'],
+    log:
+      process.env.NODE_ENV === 'development'
+        ? ['query', 'info', 'warn', 'error']
+        : ['error'],
 
     // Error formatting สำหรับ development
     errorFormat: process.env.NODE_ENV === 'development' ? 'pretty' : 'minimal',
@@ -65,25 +66,20 @@ export async function checkDatabaseConnection(): Promise<boolean> {
  */
 export async function getDatabaseStats() {
   try {
-    const [
-      customerCount,
-      jobCount,
-      userCount,
-      activeJobCount,
-      recentJobCount,
-    ] = await Promise.all([
-      prisma.customer.count(),
-      prisma.job.count(),
-      prisma.user.count(),
-      prisma.job.count({ where: { status: { in: ['NEW', 'IN_PROGRESS'] } } }),
-      prisma.job.count({
-        where: {
-          createdAt: {
-            gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 7 วันที่แล้ว
+    const [customerCount, jobCount, userCount, activeJobCount, recentJobCount] =
+      await Promise.all([
+        prisma.customer.count(),
+        prisma.job.count(),
+        prisma.user.count(),
+        prisma.job.count({ where: { status: { in: ['NEW', 'IN_PROGRESS'] } } }),
+        prisma.job.count({
+          where: {
+            createdAt: {
+              gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 7 วันที่แล้ว
+            },
           },
-        },
-      }),
-    ])
+        }),
+      ])
 
     return {
       customers: customerCount,
@@ -124,21 +120,6 @@ export async function disconnectDatabase() {
  */
 
 /**
- * Helper สำหรับการทำ transaction ที่ซับซ้อน
- */
-export async function withTransaction<T>(
-  callback: (tx: Omit<PrismaClient, '$connect' | '$disconnect' | '$on' | '$transaction' | '$use'>) => Promise<T>
-): Promise<T> {
-  return prisma.$transaction(callback, {
-    // Transaction timeout (default: 5000ms)
-    timeout: 10000,
-
-    // Isolation level สำหรับ data consistency
-    isolationLevel: 'ReadCommitted',
-  })
-}
-
-/**
  * =============================================================================
  * MIGRATION HELPERS
  * =============================================================================
@@ -150,31 +131,32 @@ export async function withTransaction<T>(
 export async function checkMigrationStatus() {
   try {
     // ตรวจสอบว่าตาราง _prisma_migrations มีอยู่หรือไม่
-    const result = await prisma.$queryRaw`
+    const result = (await prisma.$queryRaw`
       SELECT EXISTS (
         SELECT FROM information_schema.tables
         WHERE table_schema = 'public'
         AND table_name = '_prisma_migrations'
       );
-    ` as [{ exists: boolean }]
+    `) as [{ exists: boolean }]
 
     if (!result[0]?.exists) {
       return { migrated: false, message: 'Migration table not found' }
     }
 
     // ตรวจสอบ migrations ที่ยังไม่ได้รัน
-    const pendingMigrations = await prisma.$queryRaw`
+    const pendingMigrations = (await prisma.$queryRaw`
       SELECT migration_name
       FROM _prisma_migrations
       WHERE finished_at IS NULL;
-    ` as Array<{ migration_name: string }>
+    `) as Array<{ migration_name: string }>
 
     return {
       migrated: pendingMigrations.length === 0,
-      pendingMigrations: pendingMigrations.map(m => m.migration_name),
-      message: pendingMigrations.length === 0
-        ? 'All migrations completed'
-        : `${pendingMigrations.length} pending migrations`
+      pendingMigrations: pendingMigrations.map((m) => m.migration_name),
+      message:
+        pendingMigrations.length === 0
+          ? 'All migrations completed'
+          : `${pendingMigrations.length} pending migrations`,
     }
   } catch (error) {
     console.error('Error checking migration status:', error)
@@ -189,18 +171,18 @@ export async function checkMigrationStatus() {
  */
 
 /**
- * Monitor database query performance
+ * Monitor database query performance - Disabled for build compatibility
  */
-export function enableQueryLogging() {
-  if (process.env.NODE_ENV === 'development') {
-    prisma.$on('query' as any, (e: any) => {
-      console.log(`Query: ${e.query}`)
-      console.log(`Duration: ${e.duration}ms`)
-      console.log(`Params: ${e.params}`)
-      console.log('---')
-    })
-  }
-}
+// export function enableQueryLogging() {
+//   if (process.env.NODE_ENV === 'development') {
+//     prisma.$on('query', (e: any) => {
+//       console.log(`Query: ${e.query}`)
+//       console.log(`Duration: ${e.duration}ms`)
+//       console.log(`Params: ${e.params}`)
+//       console.log('---')
+//     })
+//   }
+// }
 
 /**
  * =============================================================================

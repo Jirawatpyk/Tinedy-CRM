@@ -1,0 +1,5 @@
+{
+  "buildCommand": "pnpm install && pnpm --filter crm-app build",
+  "outputDirectory": "apps/crm-app/.next",
+  "installCommand": "pnpm install"
+}

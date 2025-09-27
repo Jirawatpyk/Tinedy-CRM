@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
+    "vercel-build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
@@ -15,12 +16,11 @@
     "db:migrate:deploy": "prisma migrate deploy",
     "db:migrate:reset": "prisma migrate reset",
     "db:studio": "prisma studio",
-    "db:seed": "tsx prisma/seed.ts",
     "db:push": "prisma db push",
     "db:pull": "prisma db pull",
     "db:format": "prisma format",
     "db:validate": "prisma validate",
-    "db:reset": "prisma migrate reset --force && npm run db:seed",
+    "db:reset": "prisma migrate reset --force",
     "db:fresh": "npm run db:reset",
     "db:setup": "tsx scripts/setup-database.ts",
     "vercel-build": "prisma generate && next build"
@@ -71,5 +71,5 @@
     "jest-mock-extended": "^4.0.0",
     "prettier": "^3.0.0",
     "tsx": "^4.7.0"
-  },
+  }
 }

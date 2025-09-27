@@ -9,7 +9,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import {
   checkDatabaseConnection,
   getDatabaseStats,
-  checkMigrationStatus
+  checkMigrationStatus,
 } from '@/lib/db'
 
 export async function GET(request: NextRequest) {
@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
         {
           status: 'error',
           message: 'Database connection failed',
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         },
         { status: 503 }
       )
@@ -32,8 +32,8 @@ export async function GET(request: NextRequest) {
 
     // ดึงข้อมูลสถิติและสถานะ migrations แบบ parallel
     const [dbStats, migrationStatus] = await Promise.all([
-      getDatabaseStats().catch(error => ({ error: error.message })),
-      checkMigrationStatus().catch(error => ({ error: error.message }))
+      getDatabaseStats().catch((error) => ({ error: error.message })),
+      checkMigrationStatus().catch((error) => ({ error: error.message })),
     ])
 
     const responseTime = Date.now() - startTime
@@ -46,14 +46,13 @@ export async function GET(request: NextRequest) {
       database: {
         connected: dbConnected,
         stats: dbStats,
-        migrations: migrationStatus
+        migrations: migrationStatus,
       },
       environment: {
         nodeEnv: process.env.NODE_ENV,
-        runtime: 'edge'
-      }
+        runtime: 'edge',
+      },
     })
-
   } catch (error) {
     console.error('Health check failed:', error)
 
@@ -62,7 +61,7 @@ export async function GET(request: NextRequest) {
         status: 'error',
         message: 'Health check failed',
         error: error instanceof Error ? error.message : 'Unknown error',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       },
       { status: 500 }
     )

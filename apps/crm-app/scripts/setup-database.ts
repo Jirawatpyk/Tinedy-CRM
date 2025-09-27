@@ -13,7 +13,7 @@ import { promisify } from 'util'
 import {
   checkDatabaseConnection,
   checkMigrationStatus,
-  getDatabaseStats
+  getDatabaseStats,
 } from '../lib/db'
 
 const execAsync = promisify(exec)
@@ -105,7 +105,10 @@ async function setupDatabase() {
 
     if (!dbConnected) {
       colorLog('red', '❌ ไม่สามารถเชื่อมต่อฐานข้อมูลได้')
-      colorLog('yellow', '💡 กรุณาตรวจสอบ DATABASE_URL และสถานะของ database server')
+      colorLog(
+        'yellow',
+        '💡 กรุณาตรวจสอบ DATABASE_URL และสถานะของ database server'
+      )
       process.exit(1)
     }
 
@@ -154,7 +157,9 @@ async function setupDatabase() {
     colorLog('green', '🎉 การตั้งค่าฐานข้อมูลเสร็จสิ้นเรียบร้อย!')
     colorLog('cyan', '\n📝 ขั้นตอนต่อไป:')
     console.log('   1. รัน npm run dev เพื่อเริ่มต้น development server')
-    console.log('   2. เข้าไปที่ http://localhost:3000/api/health เพื่อตรวจสอบสถานะ')
+    console.log(
+      '   2. เข้าไปที่ http://localhost:3000/api/health เพื่อตรวจสอบสถานะ'
+    )
     console.log('   3. รัน npm run db:studio เพื่อดูข้อมูลในฐานข้อมูล')
 
     if (stats.users === 0) {
@@ -162,7 +167,6 @@ async function setupDatabase() {
       console.log('   Admin: admin@tinedy.com / admin123')
       console.log('   Operations: operations1@tinedy.com / ops123')
     }
-
   } catch (error) {
     colorLog('red', '❌ เกิดข้อผิดพลาดในการตั้งค่าฐานข้อมูล')
     console.error(error)

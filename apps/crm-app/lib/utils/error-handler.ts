@@ -17,7 +17,12 @@ export class CustomApiError extends Error {
   code?: string
   details?: any
 
-  constructor(message: string, status: number = 500, code?: string, details?: any) {
+  constructor(
+    message: string,
+    status: number = 500,
+    code?: string,
+    details?: any
+  ) {
     super(message)
     this.name = 'CustomApiError'
     this.status = status
@@ -38,7 +43,7 @@ export function handleApiError(error: any): NextResponse {
       {
         error: error.message,
         code: error.code,
-        details: error.details
+        details: error.details,
       },
       { status: error.status }
     )
@@ -46,17 +51,20 @@ export function handleApiError(error: any): NextResponse {
 
   // Zod validation errors
   if (error instanceof ZodError) {
-    const fieldErrors = error.errors.reduce((acc, err) => {
-      if (err.path[0]) {
-        acc[err.path[0] as string] = err.message
-      }
-      return acc
-    }, {} as Record<string, string>)
+    const fieldErrors = error.issues.reduce(
+      (acc: Record<string, string>, err: any) => {
+        if (err.path[0]) {
+          acc[err.path[0] as string] = err.message
+        }
+        return acc
+      },
+      {} as Record<string, string>
+    )
 
     return NextResponse.json(
       {
         error: 'Validation failed',
-        errors: fieldErrors
+        errors: fieldErrors,
       },
       { status: 400 }
     )
@@ -72,34 +80,30 @@ export function handleApiError(error: any): NextResponse {
           {
             error: 'Validation failed',
             errors: {
-              [field?.[0] || 'field']: `${field?.[0] || 'Field'} already exists`
-            }
+              [field?.[0] || 'field']:
+                `${field?.[0] || 'Field'} already exists`,
+            },
           },
           { status: 400 }
         )
 
       case 'P2025':
         // Record not found
-        return NextResponse.json(
-          { error: 'Record not found' },
-          { status: 404 }
-        )
+        return NextResponse.json({ error: 'Record not found' }, { status: 404 })
 
       case 'P2003':
         // Foreign key constraint violation
         return NextResponse.json(
           {
             error: 'Cannot delete record due to related data',
-            details: 'This record is referenced by other data and cannot be deleted'
+            details:
+              'This record is referenced by other data and cannot be deleted',
           },
           { status: 400 }
         )
 
       default:
-        return NextResponse.json(
-          { error: 'Database error' },
-          { status: 500 }
-        )
+        return NextResponse.json({ error: 'Database error' }, { status: 500 })
     }
   }
 
@@ -113,18 +117,12 @@ export function handleApiError(error: any): NextResponse {
 
   // Network/timeout errors
   if (error.name === 'AbortError') {
-    return NextResponse.json(
-      { error: 'Request timeout' },
-      { status: 408 }
-    )
+    return NextResponse.json({ error: 'Request timeout' }, { status: 408 })
   }
 
   // JSON parsing errors
   if (error instanceof SyntaxError && error.message.includes('JSON')) {
-    return NextResponse.json(
-      { error: 'Invalid JSON format' },
-      { status: 400 }
-    )
+    return NextResponse.json({ error: 'Invalid JSON format' }, { status: 400 })
   }
 
   // Rate limiting (if implemented)
@@ -132,7 +130,7 @@ export function handleApiError(error: any): NextResponse {
     return NextResponse.json(
       {
         error: 'Too many requests',
-        details: 'Please try again later'
+        details: 'Please try again later',
       },
       { status: 429 }
     )
@@ -143,7 +141,7 @@ export function handleApiError(error: any): NextResponse {
     return NextResponse.json(
       {
         error: 'Request payload too large',
-        details: 'Reduce the size of your request'
+        details: 'Reduce the size of your request',
       },
       { status: 413 }
     )
@@ -153,7 +151,10 @@ export function handleApiError(error: any): NextResponse {
   return NextResponse.json(
     {
       error: 'Internal server error',
-      message: process.env.NODE_ENV === 'development' ? error.message : 'Something went wrong'
+      message:
+        process.env.NODE_ENV === 'development'
+          ? error.message
+          : 'Something went wrong',
     },
     { status: 500 }
   )
@@ -181,7 +182,7 @@ export function validateRequiredParams(
   params: Record<string, any>,
   required: string[]
 ): void {
-  const missing = required.filter(key => !params[key])
+  const missing = required.filter((key) => !params[key])
 
   if (missing.length > 0) {
     throw new CustomApiError(
@@ -219,7 +220,7 @@ export function checkRateLimit(
       {
         maxRequests,
         windowMs,
-        resetTime: record.resetTime
+        resetTime: record.resetTime,
       }
     )
   }

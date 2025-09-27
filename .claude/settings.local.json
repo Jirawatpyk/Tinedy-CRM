@@ -63,7 +63,9 @@
       "Bash(PORT=3000 npm run dev)",
       "Bash(netstat:*)",
       "Bash(findstr:*)",
-      "Bash(git pull:*)"
+      "Bash(git pull:*)",
+      "Bash(pnpm db:migrate:*)",
+      "Bash(pnpm db:push:*)"
     ],
     "deny": [],
     "ask": []
