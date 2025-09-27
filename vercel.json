@@ -1,7 +1,6 @@
 {
-  "buildCommand": "pnpm --filter crm-app run vercel-build",
+  "framework": "nextjs",
+  "buildCommand": "cd apps/crm-app && npm run build",
   "outputDirectory": "apps/crm-app/.next",
-  "installCommand": "pnpm install",
-  "devCommand": "pnpm --filter crm-app dev",
-  "ignoreCommand": "git diff --quiet HEAD^ HEAD"
+  "installCommand": "cd apps/crm-app && npm install"
 }
