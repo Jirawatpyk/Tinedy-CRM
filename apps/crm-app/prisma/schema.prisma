@@ -109,23 +109,27 @@ model Customer {
 }
 
 model Job {
-  id            String      @id @default(cuid())
-  customerId    String      // รหัสลูกค้า
-  serviceType   String      // ประเภทบริการ
-  description   String?     // รายละเอียดงาน
-  status        JobStatus   @default(NEW)
-  priority      Priority    @default(MEDIUM)
-  scheduledAt   DateTime?   // เวลานัดหมาย
-  completedAt   DateTime?   // เวลาที่เสร็จ
-  assignedToId  String?     // รหัสพนักงานที่รับผิดชอบ
-  n8nWorkflowId String?     // รหัส N8N workflow
-  webhookData   Json?       // ข้อมูลดิบจาก webhook
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  id              String      @id @default(uuid()) // ใช้ UUID ตาม Story 2.3
+  customerId      String      // รหัสลูกค้า (Foreign Key)
+  serviceType     ServiceType // ประเภทบริการ (CLEANING, TRAINING)
+  scheduledDate   DateTime    // วันที่นัดหมาย (required ตาม Story 2.3)
+  price           Decimal     @db.Decimal(10,2) // ราคา (2 ทศนิยม)
+  status          JobStatus   @default(NEW) // สถานะงาน
+  notes           String?     // บันทึกเพิ่มเติม (optional)
+  assignedUserId  String?     // รหัสพนักงานที่รับผิดชอบ (optional)
+
+  // เก็บฟิลด์เดิมไว้เพื่อ backward compatibility
+  description     String?     // รายละเอียดงาน
+  priority        Priority    @default(MEDIUM)
+  completedAt     DateTime?   // เวลาที่เสร็จ
+  n8nWorkflowId   String?     // รหัส N8N workflow
+  webhookData     Json?       // ข้อมูลดิบจาก webhook
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
 
   // Relations
   customer      Customer          @relation(fields: [customerId], references: [id], onDelete: Restrict)
-  assignedTo    User?             @relation(fields: [assignedToId], references: [id], onDelete: SetNull)
+  assignedUser  User?             @relation("AssignedJobs", fields: [assignedUserId], references: [id], onDelete: SetNull)
   qualityChecks QualityCheck[]
   training      TrainingWorkflow?
   webhookLogs   WebhookLog[]
