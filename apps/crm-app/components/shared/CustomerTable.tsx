@@ -182,7 +182,7 @@ export function CustomerTable() {
         <Link href="/customers/new">
           <Button>
             <Plus className="mr-2 h-4 w-4" />
-            Add New Customer
+            เพิ่มลูกค้าใหม่
           </Button>
         </Link>
       </div>

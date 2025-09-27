@@ -16,10 +16,13 @@ export function Sidebar() {
   const pathname = usePathname()
 
   return (
-    <div className="flex flex-col w-64 bg-white shadow-lg">
-      <div className="flex flex-col flex-1 min-h-0">
-        <div className="flex flex-col flex-1 pt-5 pb-4 overflow-y-auto">
-          <nav className="mt-5 flex-1 px-2 space-y-1">
+    <div className="flex flex-col w-64 min-w-64 bg-white shadow-lg border-r">
+      <div className="flex flex-col flex-1 min-h-screen">
+        <div className="flex-1 pt-5 pb-4 overflow-y-auto">
+          <div className="px-4 mb-8">
+            <h2 className="text-lg font-semibold text-gray-900">Tinedy CRM</h2>
+          </div>
+          <nav className="flex-1 px-2 space-y-1">
             {navigation.map((item) => {
               const isActive = pathname === item.href
               return (

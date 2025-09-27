@@ -20,13 +20,13 @@ export default function NewCustomerPage() {
           <Button variant="ghost" size="sm" asChild>
             <Link href="/customers" className="flex items-center gap-2">
               <ArrowLeft className="h-4 w-4" />
-              Back to Customers
+              กลับไปรายการลูกค้า
             </Link>
           </Button>
         </div>
-        <h1 className="text-3xl font-bold">Add New Customer</h1>
+        <h1 className="text-3xl font-bold">เพิ่มลูกค้าใหม่</h1>
         <p className="text-muted-foreground">
-          Create a new customer record in the system
+          สร้างข้อมูลลูกค้าใหม่ในระบบ
         </p>
       </div>
 

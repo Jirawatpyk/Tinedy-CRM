@@ -15,9 +15,9 @@ export default async function DashboardLayout({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="flex">
+      <div className="flex h-screen">
         <Sidebar />
-        <main className="flex-1 overflow-hidden">
+        <main className="flex-1 flex flex-col overflow-hidden">
           <div className="bg-white shadow">
             <div className="px-4 sm:px-6 lg:px-8">
               <div className="flex justify-between h-16">

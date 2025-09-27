@@ -22,8 +22,7 @@
     "db:validate": "prisma validate",
     "db:reset": "prisma migrate reset --force",
     "db:fresh": "npm run db:reset",
-    "db:setup": "tsx scripts/setup-database.ts",
-    "vercel-build": "prisma generate && next build"
+    "db:setup": "tsx scripts/setup-database.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

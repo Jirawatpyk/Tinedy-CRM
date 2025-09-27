@@ -1,4 +1,14 @@
-export default function DashboardPage() {
+import { auth } from '@/auth'
+import { redirect } from 'next/navigation'
+
+export default async function Home() {
+  const session = await auth()
+
+  if (!session) {
+    redirect('/login')
+  }
+
+  // User is logged in, show dashboard content
   return (
     <div className="container mx-auto py-6">
       <div className="mb-6">
@@ -13,7 +23,7 @@ export default function DashboardPage() {
           <h3 className="text-sm font-medium text-muted-foreground">
             ลูกค้าทั้งหมด
           </h3>
-          <p className="text-2xl font-bold">0</p>
+          <p className="text-2xl font-bold">3</p>
         </div>
         <div className="rounded-lg border p-4">
           <h3 className="text-sm font-medium text-muted-foreground">งานใหม่</h3>
