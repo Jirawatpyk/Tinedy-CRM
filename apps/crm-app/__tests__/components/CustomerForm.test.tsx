@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { CustomerForm } from '@/components/forms/CustomerForm'
-import { Customer } from '@tinedy/types'
+import { Customer } from '@/types'
 import '@testing-library/jest-dom'
 
 // Mock Next.js router

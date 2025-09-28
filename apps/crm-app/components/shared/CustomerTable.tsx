@@ -22,7 +22,7 @@ import {
   Eye,
 } from 'lucide-react'
 import Link from 'next/link'
-import { Customer } from '@tinedy/types'
+import { Customer } from '@/types'
 
 const ITEMS_PER_PAGE = 10
 

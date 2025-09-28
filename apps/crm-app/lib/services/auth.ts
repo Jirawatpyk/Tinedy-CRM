@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs'
 import { prisma } from '../db'
-import { UserRole } from '@tinedy/types'
+import { UserRole } from '@/types'
 
 export interface CreateUserData {
   name: string

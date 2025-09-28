@@ -9,7 +9,7 @@ import {
   Customer,
   CustomerCreateInput,
   CustomerUpdateInput,
-} from '@tinedy/types'
+} from '@/types'
 import { Button } from '@/components/ui/button'
 import {
   Form,

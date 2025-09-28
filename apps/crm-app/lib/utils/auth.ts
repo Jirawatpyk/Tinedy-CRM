@@ -1,4 +1,4 @@
-import { UserRole } from '@tinedy/types'
+import { UserRole } from '@/types'
 
 export const ROLES = {
   ADMIN: 'ADMIN' as UserRole,

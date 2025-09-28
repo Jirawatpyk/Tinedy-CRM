@@ -6,7 +6,7 @@ import {
   ManagerOnly,
   OperationsOnly,
 } from '../../components/shared/role-guard'
-import { UserRole } from '@tinedy/types'
+import { UserRole } from '@/types'
 
 // Mock useRole hook
 jest.mock('../../lib/hooks/useRole', () => ({

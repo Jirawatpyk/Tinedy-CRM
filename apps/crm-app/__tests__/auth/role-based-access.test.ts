@@ -4,7 +4,7 @@ import {
   isOperations,
   isQCManager,
 } from '../../lib/utils/auth'
-import { UserRole } from '@tinedy/types'
+import { UserRole } from '@/types'
 
 describe('Role-based Access Control', () => {
   describe('hasRequiredRole', () => {

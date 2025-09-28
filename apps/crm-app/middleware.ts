@@ -1,6 +1,6 @@
 import { auth } from '@/auth'
 import { NextResponse } from 'next/server'
-import { UserRole } from '@tinedy/types'
+import { UserRole } from '@/types'
 
 // Define role-based route protection rules
 const PROTECTED_ROUTES: Record<string, UserRole[]> = {

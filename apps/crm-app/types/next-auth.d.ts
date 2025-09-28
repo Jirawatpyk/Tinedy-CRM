@@ -1,4 +1,4 @@
-import type { UserRole } from '@tinedy/types'
+import type { UserRole } from '@/types'
 
 declare module 'next-auth' {
   interface User {

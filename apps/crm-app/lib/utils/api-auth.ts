@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
 import { auth } from '@/auth'
-import { UserRole } from '@tinedy/types'
+import { UserRole } from '@/types'
 import { hasRequiredRole } from './auth'
 
 export interface AuthenticatedRequest extends NextRequest {

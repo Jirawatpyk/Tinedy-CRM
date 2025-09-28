@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import { CustomerForm } from '@/components/forms/CustomerForm'
-import { Customer } from '@tinedy/types'
+import { Customer } from '@/types'
 import Link from 'next/link'
 import { ArrowLeft, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'

@@ -1,7 +1,7 @@
 'use client'
 
 import { useSession } from 'next-auth/react'
-import { UserRole } from '@tinedy/types'
+import { UserRole } from '@/types'
 import { hasRequiredRole } from '../../lib/utils/auth'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
