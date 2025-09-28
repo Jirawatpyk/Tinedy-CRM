@@ -1,7 +1,4 @@
-'use client'
-
-import { withRole } from '@/components/shared/withRole'
-import { useRole } from '@/lib/hooks/useRole'
+import { requireAdmin } from '@/lib/auth-utils'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -11,8 +8,9 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 
-function AdminPage() {
-  const { role } = useRole()
+export default async function AdminPage() {
+  // Server-side authentication and role checking
+  const user = await requireAdmin()
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -22,7 +20,7 @@ function AdminPage() {
         <Card>
           <CardHeader>
             <CardTitle>ยินดีต้อนรับ Admin</CardTitle>
-            <CardDescription>คุณเข้าสู่ระบบในฐานะ: {role}</CardDescription>
+            <CardDescription>คุณเข้าสู่ระบบในฐานะ: {user.role}</CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-gray-600 mb-4">
@@ -85,8 +83,3 @@ function AdminPage() {
     </div>
   )
 }
-
-export default withRole(AdminPage, {
-  requiredRoles: ['ADMIN'],
-  fallbackPath: '/unauthorized',
-})

@@ -24,7 +24,10 @@
       "Bash(npx tsc:*)",
       "Bash(npm run lint)",
       "Bash(grep:*)",
-      "Bash(npm run type-check:*)"
+      "Bash(npm run type-check:*)",
+      "Bash(npx jest:*)",
+      "Bash(pnpm type-check:*)",
+      "Bash(pnpm build:*)"
     ],
     "deny": [],
     "ask": []

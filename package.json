@@ -29,6 +29,7 @@
     "test:performance": "jest tests/performance --testTimeout=120000",
     "test:ci": "jest --coverage --ci --watchAll=false --passWithNoTests",
     "test:debug": "node --inspect-brk node_modules/.bin/jest --runInBand",
+    "test:e2e": "pnpm --filter crm-app playwright test",
     "db:push": "cd apps/crm-app && prisma db push",
     "db:generate": "cd apps/crm-app && prisma generate",
     "db:migrate": "cd apps/crm-app && prisma migrate dev",

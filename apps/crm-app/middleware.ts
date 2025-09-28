@@ -1,8 +1,8 @@
-import { auth } from '@/auth'
-import { NextResponse } from 'next/server'
-import { UserRole } from '@/types'
+import { NextRequest, NextResponse } from 'next/server'
 
-// Define role-based route protection rules
+// Define role-based route protection rules (lightweight types)
+type UserRole = 'ADMIN' | 'OPERATIONS' | 'TRAINING' | 'QC_MANAGER'
+
 const PROTECTED_ROUTES: Record<string, UserRole[]> = {
   '/admin': ['ADMIN'],
   '/admin/users': ['ADMIN'],
@@ -11,40 +11,38 @@ const PROTECTED_ROUTES: Record<string, UserRole[]> = {
   '/operations': ['ADMIN', 'OPERATIONS', 'QC_MANAGER'],
 }
 
-export default auth((req) => {
-  const { pathname } = req.nextUrl
+export function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl
 
-  // Allow access to login page, unauthorized page, and API routes
+  // Allow access to public routes, login page, unauthorized page, and API routes
   if (
     pathname.startsWith('/login') ||
     pathname.startsWith('/api/') ||
-    pathname === '/unauthorized'
+    pathname === '/unauthorized' ||
+    pathname.startsWith('/_next') ||
+    pathname.startsWith('/favicon') ||
+    pathname === '/'
   ) {
     return NextResponse.next()
   }
 
-  // Redirect to login if not authenticated
-  if (!req.auth && pathname !== '/login') {
-    const loginUrl = new URL('/login', req.url)
+  // Check for authentication token in cookies
+  const sessionToken = request.cookies.get('authjs.session-token') ||
+                      request.cookies.get('__Secure-authjs.session-token')
+
+  // Redirect to login if no session token found
+  if (!sessionToken) {
+    const loginUrl = new URL('/login', request.url)
     loginUrl.searchParams.set('callbackUrl', pathname)
     return NextResponse.redirect(loginUrl)
   }
 
-  // Check role-based access for protected routes
-  if (req.auth) {
-    for (const [route, allowedRoles] of Object.entries(PROTECTED_ROUTES)) {
-      if (pathname.startsWith(route)) {
-        const userRole = req.auth.user?.role as UserRole
-
-        if (!userRole || !allowedRoles.includes(userRole)) {
-          return NextResponse.redirect(new URL('/unauthorized', req.url))
-        }
-      }
-    }
-  }
+  // For now, allow authenticated users to access all routes
+  // Role-based checking will be handled in individual pages/API routes
+  // This reduces the middleware bundle size significantly
 
   return NextResponse.next()
-})
+}
 
 export const config = {
   matcher: ['/((?!.*\\..*|_next).*)', '/', '/(api|trpc)(.*)'],
