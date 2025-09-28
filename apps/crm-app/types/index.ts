@@ -6,11 +6,21 @@ export type CustomerStatus = 'ACTIVE' | 'INACTIVE' | 'BLOCKED'
 
 export type ServiceType = 'CLEANING' | 'TRAINING'
 
-export type JobStatus = 'NEW' | 'ASSIGNED' | 'IN_PROGRESS' | 'DONE' | 'CANCELLED'
+export type JobStatus =
+  | 'NEW'
+  | 'ASSIGNED'
+  | 'IN_PROGRESS'
+  | 'DONE'
+  | 'CANCELLED'
 
 export type Priority = 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT'
 
-export type QCStatus = 'PENDING' | 'IN_PROGRESS' | 'PASSED' | 'FAILED' | 'NEEDS_REVIEW'
+export type QCStatus =
+  | 'PENDING'
+  | 'IN_PROGRESS'
+  | 'PASSED'
+  | 'FAILED'
+  | 'NEEDS_REVIEW'
 
 export type TrainingStatus =
   | 'AWAITING_DOCUMENTS'
@@ -19,7 +29,12 @@ export type TrainingStatus =
   | 'TRAINING_COMPLETED'
   | 'COMPLETED'
 
-export type WebhookStatus = 'RECEIVED' | 'PROCESSING' | 'PROCESSED' | 'FAILED' | 'RETRY_NEEDED'
+export type WebhookStatus =
+  | 'RECEIVED'
+  | 'PROCESSING'
+  | 'PROCESSED'
+  | 'FAILED'
+  | 'RETRY_NEEDED'
 
 // Database model types
 export interface Customer {

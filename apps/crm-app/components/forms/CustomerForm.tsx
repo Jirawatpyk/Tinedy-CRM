@@ -5,11 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
-import {
-  Customer,
-  CustomerCreateInput,
-  CustomerUpdateInput,
-} from '@/types'
+import { Customer } from '@/types'
 import { Button } from '@/components/ui/button'
 import {
   Form,

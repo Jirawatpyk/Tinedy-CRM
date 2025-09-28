@@ -56,7 +56,9 @@ test.describe('Story 2.3: Customer Details & Service History', () => {
     await expect(page.locator('.badge, [class*="badge"]')).toBeVisible()
 
     // Check customer contact information is displayed
-    await expect(page.locator('text=/02-\d{3}-\d{4}|081-\d{3}-\d{4}/')).toBeVisible()
+    await expect(
+      page.locator('text=/02-\d{3}-\d{4}|081-\d{3}-\d{4}/')
+    ).toBeVisible()
   })
 
   test('AC3: Page shows a list of all jobs/services associated with the customer', async ({
@@ -74,7 +76,9 @@ test.describe('Story 2.3: Customer Details & Service History', () => {
     await expect(page.locator('text=ประวัติการให้บริการ')).toBeVisible()
 
     // Check if jobs are displayed (there should be jobs from seed data)
-    const jobHistorySection = page.locator('text=ประวัติการให้บริการ').locator('..')
+    const jobHistorySection = page
+      .locator('text=ประวัติการให้บริการ')
+      .locator('..')
     await expect(jobHistorySection).toBeVisible()
 
     // Should show either job list or empty state
@@ -111,14 +115,20 @@ test.describe('Story 2.3: Customer Details & Service History', () => {
 
       // Check for status badge
       await expect(
-        page.locator('text=ใหม่, text=มอบหมายแล้ว, text=กำลังดำเนินการ, text=เสร็จสิ้น, text=ยกเลิก').first()
+        page
+          .locator(
+            'text=ใหม่, text=มอบหมายแล้ว, text=กำลังดำเนินการ, text=เสร็จสิ้น, text=ยกเลิก'
+          )
+          .first()
       ).toBeVisible()
 
       // Check for price (should contain "บาท")
       await expect(page.locator('text=/\d+,?\d*\s*บาท/')).toBeVisible()
 
       // Check for date
-      await expect(page.locator('text=/\d{1,2}\/\d{1,2}\/\d{4}|\d{1,2}\s+\w+\s+\d{4}/')).toBeVisible()
+      await expect(
+        page.locator('text=/\d{1,2}\/\d{1,2}\/\d{4}|\d{1,2}\s+\w+\s+\d{4}/')
+      ).toBeVisible()
     }
   })
 
@@ -136,7 +146,9 @@ test.describe('Story 2.3: Customer Details & Service History', () => {
     await page.waitForTimeout(2000)
 
     // Check if multiple jobs exist to verify sorting
-    const jobDates = page.locator('[class*="calendar"], text=/\d{1,2}\/\d{1,2}\/\d{4}/')
+    const jobDates = page.locator(
+      '[class*="calendar"], text=/\d{1,2}\/\d{1,2}\/\d{4}/'
+    )
     const dateCount = await jobDates.count()
 
     if (dateCount > 1) {
@@ -156,7 +168,9 @@ test.describe('Story 2.3: Customer Details & Service History', () => {
     if (badgeCount > 0) {
       // Verify badges have proper status text
       await expect(
-        page.locator('text=ใหม่, text=มอบหมายแล้ว, text=กำลังดำเนินการ, text=เสร็จสิ้น, text=ยกเลิก')
+        page.locator(
+          'text=ใหม่, text=มอบหมายแล้ว, text=กำลังดำเนินการ, text=เสร็จสิ้น, text=ยกเลิก'
+        )
       ).toBeVisible()
     }
   })
@@ -173,7 +187,9 @@ test.describe('Story 2.3: Customer Details & Service History', () => {
     await page.waitForLoadState('networkidle')
 
     // Find and verify Edit Customer button exists
-    const editButton = page.locator('text=แก้ไขข้อมูล, text=Edit Customer, button:has-text("แก้ไข")')
+    const editButton = page.locator(
+      'text=แก้ไขข้อมูล, text=Edit Customer, button:has-text("แก้ไข")'
+    )
     await expect(editButton).toBeVisible()
 
     // Click the edit button
@@ -182,7 +198,9 @@ test.describe('Story 2.3: Customer Details & Service History', () => {
     // Should navigate to edit page
     await expect(page).toHaveURL(/\/customers\/[^\/]+\/edit/)
     await expect(
-      page.locator('h1:has-text("แก้ไข"), h1:has-text("Edit"), text=แก้ไขข้อมูลลูกค้า')
+      page.locator(
+        'h1:has-text("แก้ไข"), h1:has-text("Edit"), text=แก้ไขข้อมูลลูกค้า'
+      )
     ).toBeVisible()
   })
 
@@ -235,17 +253,23 @@ test.describe('Story 2.3: Customer Details & Service History', () => {
     await page.waitForLoadState('networkidle')
 
     // Find and click back navigation
-    const backButton = page.locator('text=กลับสู่รายการลูกค้า, text=กลับ, [aria-label*="back"], [class*="back"]')
+    const backButton = page.locator(
+      'text=กลับสู่รายการลูกค้า, text=กลับ, [aria-label*="back"], [class*="back"]'
+    )
     await expect(backButton).toBeVisible()
 
     await backButton.click()
 
     // Should return to customer list
     await expect(page).toHaveURL('/customers')
-    await expect(page.locator('h1:has-text("ลูกค้า"), h1:has-text("Customer")')).toBeVisible()
+    await expect(
+      page.locator('h1:has-text("ลูกค้า"), h1:has-text("Customer")')
+    ).toBeVisible()
   })
 
-  test('Responsive design: Job history displays correctly on mobile', async ({ page }) => {
+  test('Responsive design: Job history displays correctly on mobile', async ({
+    page,
+  }) => {
     // Set mobile viewport
     await page.setViewportSize({ width: 375, height: 812 })
 
@@ -260,8 +284,10 @@ test.describe('Story 2.3: Customer Details & Service History', () => {
     await page.waitForTimeout(1000)
 
     // Verify mobile-friendly layout
-    const mobileCards = page.locator('[class*="md:hidden"], [class*="mobile"], .space-y-4')
-    if (await mobileCards.count() > 0) {
+    const mobileCards = page.locator(
+      '[class*="md:hidden"], [class*="mobile"], .space-y-4'
+    )
+    if ((await mobileCards.count()) > 0) {
       await expect(mobileCards.first()).toBeVisible()
     }
 

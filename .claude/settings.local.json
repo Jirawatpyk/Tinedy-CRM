@@ -14,7 +14,17 @@
       "Bash(npm run test:*)",
       "Bash(xargs sed:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "WebFetch(domain:crm-9q2zdom5f-jirawatpyk-4879s-projects.vercel.app)",
+      "Bash(printf '\\n\\n\\n\\n\\nY\\n')",
+      "Bash(npx eslint:*)",
+      "Bash(npx prettier:*)",
+      "Bash(npx prisma generate:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npm run lint)",
+      "Bash(grep:*)",
+      "Bash(npm run type-check:*)"
     ],
     "deny": [],
     "ask": []

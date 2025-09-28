@@ -119,13 +119,19 @@ describe('JobHistoryList', () => {
     render(<JobHistoryList customerId="customer-1" />)
 
     await waitFor(() => {
-      expect(screen.getByText('ยังไม่มีประวัติการให้บริการ')).toBeInTheDocument()
-      expect(screen.getByText('ลูกค้าท่านนี้ยังไม่เคยใช้บริการของเรา')).toBeInTheDocument()
+      expect(
+        screen.getByText('ยังไม่มีประวัติการให้บริการ')
+      ).toBeInTheDocument()
+      expect(
+        screen.getByText('ลูกค้าท่านนี้ยังไม่เคยใช้บริการของเรา')
+      ).toBeInTheDocument()
     })
   })
 
   it('should display error state when fetch fails', async () => {
-    ;(global.fetch as jest.Mock).mockRejectedValueOnce(new Error('Network error'))
+    ;(global.fetch as jest.Mock).mockRejectedValueOnce(
+      new Error('Network error')
+    )
 
     render(<JobHistoryList customerId="customer-1" />)
 
@@ -150,7 +156,9 @@ describe('JobHistoryList', () => {
 
   it('should retry when retry button is clicked', async () => {
     // First call fails
-    ;(global.fetch as jest.Mock).mockRejectedValueOnce(new Error('Network error'))
+    ;(global.fetch as jest.Mock).mockRejectedValueOnce(
+      new Error('Network error')
+    )
 
     const { rerender } = render(<JobHistoryList customerId="customer-1" />)
 

@@ -19,7 +19,9 @@ describe('/api/customers/[id]/jobs', () => {
     it('should return 401 if not authenticated', async () => {
       ;(auth as jest.Mock).mockResolvedValue(null)
 
-      const request = new NextRequest('http://localhost:3000/api/customers/customer-1/jobs')
+      const request = new NextRequest(
+        'http://localhost:3000/api/customers/customer-1/jobs'
+      )
       const response = await GET(request, { params: { id: 'customer-1' } })
 
       expect(response.status).toBe(401)
@@ -32,7 +34,9 @@ describe('/api/customers/[id]/jobs', () => {
         user: { id: 'user-1', role: 'OPERATIONS' },
       })
 
-      const request = new NextRequest('http://localhost:3000/api/customers/customer-1/jobs')
+      const request = new NextRequest(
+        'http://localhost:3000/api/customers/customer-1/jobs'
+      )
       const response = await GET(request, { params: { id: 'customer-1' } })
 
       expect(response.status).toBe(403)
@@ -46,7 +50,9 @@ describe('/api/customers/[id]/jobs', () => {
       })
       ;(CustomerService.getCustomerById as jest.Mock).mockResolvedValue(null)
 
-      const request = new NextRequest('http://localhost:3000/api/customers/customer-1/jobs')
+      const request = new NextRequest(
+        'http://localhost:3000/api/customers/customer-1/jobs'
+      )
       const response = await GET(request, { params: { id: 'customer-1' } })
 
       expect(response.status).toBe(404)
@@ -83,10 +89,16 @@ describe('/api/customers/[id]/jobs', () => {
       ;(auth as jest.Mock).mockResolvedValue({
         user: { id: 'admin-1', role: 'ADMIN' },
       })
-      ;(CustomerService.getCustomerById as jest.Mock).mockResolvedValue(mockCustomer)
-      ;(JobService.getJobsByCustomerId as jest.Mock).mockResolvedValue(mockJobsResult)
+      ;(CustomerService.getCustomerById as jest.Mock).mockResolvedValue(
+        mockCustomer
+      )
+      ;(JobService.getJobsByCustomerId as jest.Mock).mockResolvedValue(
+        mockJobsResult
+      )
 
-      const request = new NextRequest('http://localhost:3000/api/customers/customer-1/jobs?page=1&limit=20')
+      const request = new NextRequest(
+        'http://localhost:3000/api/customers/customer-1/jobs?page=1&limit=20'
+      )
       const response = await GET(request, { params: { id: 'customer-1' } })
 
       expect(response.status).toBe(200)
@@ -103,7 +115,11 @@ describe('/api/customers/[id]/jobs', () => {
         hasPreviousPage: false,
       })
 
-      expect(JobService.getJobsByCustomerId).toHaveBeenCalledWith('customer-1', 1, 20)
+      expect(JobService.getJobsByCustomerId).toHaveBeenCalledWith(
+        'customer-1',
+        1,
+        20
+      )
     })
 
     it('should handle pagination parameters correctly', async () => {
@@ -117,10 +133,16 @@ describe('/api/customers/[id]/jobs', () => {
       ;(auth as jest.Mock).mockResolvedValue({
         user: { id: 'admin-1', role: 'ADMIN' },
       })
-      ;(CustomerService.getCustomerById as jest.Mock).mockResolvedValue(mockCustomer)
-      ;(JobService.getJobsByCustomerId as jest.Mock).mockResolvedValue(mockJobsResult)
+      ;(CustomerService.getCustomerById as jest.Mock).mockResolvedValue(
+        mockCustomer
+      )
+      ;(JobService.getJobsByCustomerId as jest.Mock).mockResolvedValue(
+        mockJobsResult
+      )
 
-      const request = new NextRequest('http://localhost:3000/api/customers/customer-1/jobs?page=2&limit=20')
+      const request = new NextRequest(
+        'http://localhost:3000/api/customers/customer-1/jobs?page=2&limit=20'
+      )
       const response = await GET(request, { params: { id: 'customer-1' } })
 
       expect(response.status).toBe(200)
@@ -135,7 +157,11 @@ describe('/api/customers/[id]/jobs', () => {
         hasPreviousPage: true,
       })
 
-      expect(JobService.getJobsByCustomerId).toHaveBeenCalledWith('customer-1', 2, 20)
+      expect(JobService.getJobsByCustomerId).toHaveBeenCalledWith(
+        'customer-1',
+        2,
+        20
+      )
     })
 
     it('should validate page parameter', async () => {
@@ -143,7 +169,9 @@ describe('/api/customers/[id]/jobs', () => {
         user: { id: 'admin-1', role: 'ADMIN' },
       })
 
-      const request = new NextRequest('http://localhost:3000/api/customers/customer-1/jobs?page=0')
+      const request = new NextRequest(
+        'http://localhost:3000/api/customers/customer-1/jobs?page=0'
+      )
       const response = await GET(request, { params: { id: 'customer-1' } })
 
       expect(response.status).toBe(400)
@@ -156,7 +184,9 @@ describe('/api/customers/[id]/jobs', () => {
         user: { id: 'admin-1', role: 'ADMIN' },
       })
 
-      const request = new NextRequest('http://localhost:3000/api/customers/customer-1/jobs?limit=0')
+      const request = new NextRequest(
+        'http://localhost:3000/api/customers/customer-1/jobs?limit=0'
+      )
       const response = await GET(request, { params: { id: 'customer-1' } })
 
       expect(response.status).toBe(400)
@@ -171,24 +201,38 @@ describe('/api/customers/[id]/jobs', () => {
       ;(auth as jest.Mock).mockResolvedValue({
         user: { id: 'admin-1', role: 'ADMIN' },
       })
-      ;(CustomerService.getCustomerById as jest.Mock).mockResolvedValue(mockCustomer)
-      ;(JobService.getJobsByCustomerId as jest.Mock).mockResolvedValue(mockJobsResult)
+      ;(CustomerService.getCustomerById as jest.Mock).mockResolvedValue(
+        mockCustomer
+      )
+      ;(JobService.getJobsByCustomerId as jest.Mock).mockResolvedValue(
+        mockJobsResult
+      )
 
-      const request = new NextRequest('http://localhost:3000/api/customers/customer-1/jobs?limit=200')
+      const request = new NextRequest(
+        'http://localhost:3000/api/customers/customer-1/jobs?limit=200'
+      )
       const response = await GET(request, { params: { id: 'customer-1' } })
 
       expect(response.status).toBe(200)
       // Should be capped at 100
-      expect(JobService.getJobsByCustomerId).toHaveBeenCalledWith('customer-1', 1, 100)
+      expect(JobService.getJobsByCustomerId).toHaveBeenCalledWith(
+        'customer-1',
+        1,
+        100
+      )
     })
 
     it('should handle server errors gracefully', async () => {
       ;(auth as jest.Mock).mockResolvedValue({
         user: { id: 'admin-1', role: 'ADMIN' },
       })
-      ;(CustomerService.getCustomerById as jest.Mock).mockRejectedValue(new Error('Database error'))
+      ;(CustomerService.getCustomerById as jest.Mock).mockRejectedValue(
+        new Error('Database error')
+      )
 
-      const request = new NextRequest('http://localhost:3000/api/customers/customer-1/jobs')
+      const request = new NextRequest(
+        'http://localhost:3000/api/customers/customer-1/jobs'
+      )
       const response = await GET(request, { params: { id: 'customer-1' } })
 
       expect(response.status).toBe(500)
@@ -237,14 +281,21 @@ describe('/api/customers/[id]/jobs', () => {
       ;(auth as jest.Mock).mockResolvedValue({
         user: { id: 'admin-1', role: 'ADMIN' },
       })
-      ;(CustomerService.getCustomerById as jest.Mock).mockResolvedValue(mockCustomer)
+      ;(CustomerService.getCustomerById as jest.Mock).mockResolvedValue(
+        mockCustomer
+      )
       ;(JobService.createJob as jest.Mock).mockResolvedValue(mockCreatedJob)
-      ;(JobService.getJobById as jest.Mock).mockResolvedValue(mockJobWithRelations)
+      ;(JobService.getJobById as jest.Mock).mockResolvedValue(
+        mockJobWithRelations
+      )
 
-      const request = new NextRequest('http://localhost:3000/api/customers/customer-1/jobs', {
-        method: 'POST',
-        body: JSON.stringify(jobData),
-      })
+      const request = new NextRequest(
+        'http://localhost:3000/api/customers/customer-1/jobs',
+        {
+          method: 'POST',
+          body: JSON.stringify(jobData),
+        }
+      )
 
       const response = await POST(request, { params: { id: 'customer-1' } })
 
@@ -268,10 +319,13 @@ describe('/api/customers/[id]/jobs', () => {
     it('should require authentication for job creation', async () => {
       ;(auth as jest.Mock).mockResolvedValue(null)
 
-      const request = new NextRequest('http://localhost:3000/api/customers/customer-1/jobs', {
-        method: 'POST',
-        body: JSON.stringify({ serviceType: 'CLEANING' }),
-      })
+      const request = new NextRequest(
+        'http://localhost:3000/api/customers/customer-1/jobs',
+        {
+          method: 'POST',
+          body: JSON.stringify({ serviceType: 'CLEANING' }),
+        }
+      )
 
       const response = await POST(request, { params: { id: 'customer-1' } })
 
@@ -288,10 +342,13 @@ describe('/api/customers/[id]/jobs', () => {
         id: 'customer-1',
       })
 
-      const request = new NextRequest('http://localhost:3000/api/customers/customer-1/jobs', {
-        method: 'POST',
-        body: JSON.stringify({}),
-      })
+      const request = new NextRequest(
+        'http://localhost:3000/api/customers/customer-1/jobs',
+        {
+          method: 'POST',
+          body: JSON.stringify({}),
+        }
+      )
 
       const response = await POST(request, { params: { id: 'customer-1' } })
 
@@ -308,14 +365,17 @@ describe('/api/customers/[id]/jobs', () => {
         id: 'customer-1',
       })
 
-      const request = new NextRequest('http://localhost:3000/api/customers/customer-1/jobs', {
-        method: 'POST',
-        body: JSON.stringify({
-          serviceType: 'CLEANING',
-          scheduledDate: '2024-09-30',
-          price: -100,
-        }),
-      })
+      const request = new NextRequest(
+        'http://localhost:3000/api/customers/customer-1/jobs',
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            serviceType: 'CLEANING',
+            scheduledDate: '2024-09-30',
+            price: -100,
+          }),
+        }
+      )
 
       const response = await POST(request, { params: { id: 'customer-1' } })
 
@@ -332,14 +392,17 @@ describe('/api/customers/[id]/jobs', () => {
         id: 'customer-1',
       })
 
-      const request = new NextRequest('http://localhost:3000/api/customers/customer-1/jobs', {
-        method: 'POST',
-        body: JSON.stringify({
-          serviceType: 'INVALID_TYPE',
-          scheduledDate: '2024-09-30',
-          price: 2500,
-        }),
-      })
+      const request = new NextRequest(
+        'http://localhost:3000/api/customers/customer-1/jobs',
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            serviceType: 'INVALID_TYPE',
+            scheduledDate: '2024-09-30',
+            price: 2500,
+          }),
+        }
+      )
 
       const response = await POST(request, { params: { id: 'customer-1' } })
 
