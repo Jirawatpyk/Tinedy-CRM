@@ -35,7 +35,7 @@ export function withRole<P extends object>(
     }, [session, status, router])
 
     if (status === 'loading') {
-      return <div>Loading...</div>
+      return <div>กำลังโหลด...</div>
     }
 
     if (!session) {

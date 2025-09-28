@@ -25,10 +25,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Loader2 } from 'lucide-react'
 
 const customerSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
-  phone: z.string().min(1, 'Phone number is required'),
+  name: z.string().min(1, 'กรุณาระบุชื่อลูกค้า'),
+  phone: z.string().min(1, 'กรุณาระบุเบอร์โทรศัพท์'),
   address: z.string().optional(),
-  contactChannel: z.string().min(1, 'Contact channel is required'),
+  contactChannel: z.string().min(1, 'กรุณาระบุช่องทางติดต่อ'),
 })
 
 type CustomerFormData = z.infer<typeof customerSchema>
@@ -85,7 +85,7 @@ export function CustomerForm({ customer, mode, onSuccess }: CustomerFormProps) {
           return
         }
 
-        throw new Error(errorData.error || 'Failed to save customer')
+        throw new Error(errorData.error || 'ไม่สามารถบันทึกข้อมูลลูกค้าได้')
       }
 
       // Success
@@ -95,7 +95,7 @@ export function CustomerForm({ customer, mode, onSuccess }: CustomerFormProps) {
         router.push('/customers')
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      setError(err instanceof Error ? err.message : 'เกิดข้อผิดพลาด')
     } finally {
       setIsLoading(false)
     }
@@ -105,7 +105,7 @@ export function CustomerForm({ customer, mode, onSuccess }: CustomerFormProps) {
     <Card className="w-full max-w-2xl mx-auto">
       <CardHeader>
         <CardTitle>
-          {mode === 'create' ? 'Add New Customer' : 'Edit Customer'}
+          {mode === 'create' ? 'เพิ่มลูกค้าใหม่' : 'แก้ไขข้อมูลลูกค้า'}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -116,9 +116,9 @@ export function CustomerForm({ customer, mode, onSuccess }: CustomerFormProps) {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Name *</FormLabel>
+                  <FormLabel>ชื่อลูกค้า *</FormLabel>
                   <FormControl>
-                    <Input placeholder="Customer name" {...field} />
+                    <Input placeholder="ระบุชื่อลูกค้า" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -130,9 +130,9 @@ export function CustomerForm({ customer, mode, onSuccess }: CustomerFormProps) {
               name="phone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Phone Number *</FormLabel>
+                  <FormLabel>เบอร์โทรศัพท์ *</FormLabel>
                   <FormControl>
-                    <Input placeholder="Phone number" {...field} />
+                    <Input placeholder="ระบุเบอร์โทรศัพท์" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -144,9 +144,9 @@ export function CustomerForm({ customer, mode, onSuccess }: CustomerFormProps) {
               name="contactChannel"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Contact Channel *</FormLabel>
+                  <FormLabel>ช่องทางติดต่อ *</FormLabel>
                   <FormControl>
-                    <Input placeholder="LINE, Phone Call, etc." {...field} />
+                    <Input placeholder="LINE, โทรศัพท์, อื่นๆ" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -158,10 +158,10 @@ export function CustomerForm({ customer, mode, onSuccess }: CustomerFormProps) {
               name="address"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Address</FormLabel>
+                  <FormLabel>ที่อยู่</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Customer address (optional)"
+                      placeholder="ที่อยู่ลูกค้า (เลือกได้)"
                       className="resize-none"
                       rows={3}
                       {...field}
@@ -185,7 +185,7 @@ export function CustomerForm({ customer, mode, onSuccess }: CustomerFormProps) {
                 onClick={() => router.back()}
                 disabled={isLoading}
               >
-                Cancel
+                ยกเลิก
               </Button>
               <Button type="submit" disabled={isLoading}>
                 {isLoading && (
@@ -194,7 +194,7 @@ export function CustomerForm({ customer, mode, onSuccess }: CustomerFormProps) {
                     data-testid="loading-spinner"
                   />
                 )}
-                {mode === 'create' ? 'Create Customer' : 'Update Customer'}
+                {mode === 'create' ? 'สร้างลูกค้า' : 'บันทึกข้อมูล'}
               </Button>
             </div>
           </form>

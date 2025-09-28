@@ -1,10 +1,11 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { Users, Home, Settings, LogOut } from 'lucide-react'
 import { signOut } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
 const navigation = [
   { name: 'แดชบอร์ด', href: '/', icon: Home },
@@ -12,8 +13,12 @@ const navigation = [
   { name: 'การตั้งค่า', href: '/admin/settings', icon: Settings },
 ]
 
-export function Sidebar() {
-  const pathname = usePathname()
+function SidebarContent() {
+  const [currentPath, setCurrentPath] = useState('/')
+
+  useEffect(() => {
+    setCurrentPath(window.location.pathname)
+  }, [])
 
   return (
     <div className="flex flex-col w-64 min-w-64 bg-white shadow-lg border-r">
@@ -24,7 +29,10 @@ export function Sidebar() {
           </div>
           <nav className="flex-1 px-2 space-y-1">
             {navigation.map((item) => {
-              const isActive = pathname === item.href
+              const isActive =
+                currentPath === item.href ||
+                (item.href === '/customers' &&
+                  currentPath.startsWith('/customers'))
               return (
                 <Link
                   key={item.name}
@@ -67,4 +75,8 @@ export function Sidebar() {
       </div>
     </div>
   )
+}
+
+export function Sidebar() {
+  return <SidebarContent />
 }

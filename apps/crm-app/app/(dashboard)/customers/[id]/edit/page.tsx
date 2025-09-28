@@ -28,15 +28,15 @@ export default function EditCustomerPage() {
 
         if (!response.ok) {
           if (response.status === 404) {
-            throw new Error('Customer not found')
+            throw new Error('ไม่พบข้อมูลลูกค้า')
           }
-          throw new Error('Failed to fetch customer')
+          throw new Error('ไม่สามารถโหลดข้อมูลลูกค้าได้')
         }
 
         const customerData = await response.json()
         setCustomer(customerData)
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred')
+        setError(err instanceof Error ? err.message : 'เกิดข้อผิดพลาด')
       } finally {
         setLoading(false)
       }
@@ -53,7 +53,7 @@ export default function EditCustomerPage() {
         <div className="flex items-center justify-center h-64">
           <div className="flex items-center gap-2">
             <Loader2 className="h-6 w-6 animate-spin" />
-            <span>Loading customer...</span>
+            <span>กำลังโหลดข้อมูลลูกค้า...</span>
           </div>
         </div>
       </div>
@@ -65,12 +65,12 @@ export default function EditCustomerPage() {
       <div className="container max-w-4xl mx-auto py-8">
         <Card>
           <CardHeader>
-            <CardTitle className="text-red-600">Error</CardTitle>
+            <CardTitle className="text-red-600">เกิดข้อผิดพลาด</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground mb-4">{error}</p>
             <Button variant="outline" asChild>
-              <Link href="/customers">Back to Customers</Link>
+              <Link href="/customers">กลับสู่รายการลูกค้า</Link>
             </Button>
           </CardContent>
         </Card>
@@ -83,14 +83,14 @@ export default function EditCustomerPage() {
       <div className="container max-w-4xl mx-auto py-8">
         <Card>
           <CardHeader>
-            <CardTitle>Customer Not Found</CardTitle>
+            <CardTitle>ไม่พบข้อมูลลูกค้า</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground mb-4">
-              The customer you&apos;re looking for could not be found.
+              ไม่พบข้อมูลลูกค้าที่คุณค้นหา
             </p>
             <Button variant="outline" asChild>
-              <Link href="/customers">Back to Customers</Link>
+              <Link href="/customers">กลับสู่รายการลูกค้า</Link>
             </Button>
           </CardContent>
         </Card>
@@ -105,13 +105,13 @@ export default function EditCustomerPage() {
           <Button variant="ghost" size="sm" asChild>
             <Link href="/customers" className="flex items-center gap-2">
               <ArrowLeft className="h-4 w-4" />
-              Back to Customers
+              กลับสู่รายการลูกค้า
             </Link>
           </Button>
         </div>
-        <h1 className="text-3xl font-bold">Edit Customer</h1>
+        <h1 className="text-3xl font-bold">แก้ไขข้อมูลลูกค้า</h1>
         <p className="text-muted-foreground">
-          Update customer information for {customer.name}
+          แก้ไขข้อมูลลูกค้า {customer.name}
         </p>
       </div>
 

@@ -19,6 +19,7 @@ import {
   ChevronRight,
   Plus,
   Edit,
+  Eye,
 } from 'lucide-react'
 import Link from 'next/link'
 import { Customer } from '@tinedy/types'
@@ -104,7 +105,7 @@ export function CustomerTable() {
       clearTimeout(timeoutId)
 
       if (!response.ok) {
-        throw new Error('Failed to fetch customers')
+        throw new Error('ไม่สามารถโหลดข้อมูลลูกค้าได้')
       }
 
       const data: CustomerApiResponse = await response.json()
@@ -260,12 +261,20 @@ export function CustomerTable() {
                     })}
                   </TableCell>
                   <TableCell>
-                    <Link href={`/customers/${customer.id}/edit`}>
-                      <Button variant="ghost" size="sm">
-                        <Edit className="h-4 w-4" />
-                        <span className="sr-only">Edit customer</span>
-                      </Button>
-                    </Link>
+                    <div className="flex items-center gap-2">
+                      <Link href={`/customers/${customer.id}`}>
+                        <Button variant="ghost" size="sm" title="ดูรายละเอียด">
+                          <Eye className="h-4 w-4" />
+                          <span className="sr-only">ดูรายละเอียดลูกค้า</span>
+                        </Button>
+                      </Link>
+                      <Link href={`/customers/${customer.id}/edit`}>
+                        <Button variant="ghost" size="sm" title="แก้ไขข้อมูล">
+                          <Edit className="h-4 w-4" />
+                          <span className="sr-only">แก้ไขข้อมูลลูกค้า</span>
+                        </Button>
+                      </Link>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))

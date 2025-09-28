@@ -215,8 +215,8 @@ test.describe('Customer Management Workflow', () => {
 
     // Verify page loads with customer data
     await expect(page.getByText('Edit Customer')).toBeVisible()
-    await expect(page.getByDisplayValue('สมชาย เดิม')).toBeVisible()
-    await expect(page.getByDisplayValue('+66812345678')).toBeVisible()
+    await expect(page.locator('input[value="สมชาย เดิม"]')).toBeVisible()
+    await expect(page.locator('input[value="+66812345678"]')).toBeVisible()
 
     // Update customer information
     await page.getByLabel('Name *').fill('สมชาย ใหม่')

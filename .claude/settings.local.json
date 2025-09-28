@@ -69,7 +69,12 @@
       "Bash(tsx:*)",
       "Bash(PORT=3001 npm run dev)",
       "Bash(PORT=4000 npm run dev)",
-      "Bash(PORT=5000 npm run dev)"
+      "Bash(PORT=5000 npm run dev)",
+      "Bash(timeout:*)",
+      "Bash(pnpm prisma generate:*)",
+      "Bash(pnpm db:seed:*)",
+      "Bash(DATABASE_URL=\"postgres://bcb9f31a33061ee4d89086a723def28911b541f6f5e43d706e9efbb2314e5ec2:sk_HIzvLd-S5OlNJspCWRExU@db.prisma.io:5432/postgres?sslmode=require\" npx tsx prisma/seed-simple.ts)",
+      "Bash(DATABASE_URL=\"postgres://bcb9f31a33061ee4d89086a723def28911b541f6f5e43d706e9efbb2314e5ec2:sk_HIzvLd-S5OlNJspCWRExU@db.prisma.io:5432/postgres?sslmode=require\" npx prisma db push --preview-feature)"
     ],
     "deny": [],
     "ask": []

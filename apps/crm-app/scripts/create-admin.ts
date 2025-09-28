@@ -9,7 +9,7 @@ async function createAdmin() {
   try {
     // Check if admin already exists
     const existingAdmin = await prisma.user.findUnique({
-      where: { email: 'admin@tinedy.com' }
+      where: { email: 'admin@tinedy.com' },
     })
 
     if (existingAdmin) {
@@ -26,14 +26,13 @@ async function createAdmin() {
         password: hashedPassword,
         name: 'ผู้ดูแลระบบ',
         role: 'ADMIN',
-        isActive: true
-      }
+        isActive: true,
+      },
     })
 
     console.log('✅ Admin user created successfully!')
     console.log('📧 Email: admin@tinedy.com')
     console.log('🔑 Password: admin123')
-
   } catch (error) {
     console.error('❌ Error creating admin user:', error)
   } finally {

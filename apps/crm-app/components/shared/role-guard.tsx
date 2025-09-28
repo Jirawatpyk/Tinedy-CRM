@@ -17,7 +17,7 @@ export function RoleGuard({
   const { hasRole, isLoading, isAuthenticated } = useRole()
 
   if (isLoading) {
-    return <div>Loading...</div>
+    return <div>กำลังโหลด...</div>
   }
 
   if (!isAuthenticated) {

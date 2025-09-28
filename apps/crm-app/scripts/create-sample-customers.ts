@@ -25,18 +25,18 @@ async function createSampleCustomers() {
         phone: '+66834567890',
         address: '789 ถนนดีมอล เขตดีมอล กรุงเทพฯ 10300',
         contactChannel: 'Email' as const,
-      }
+      },
     ]
 
     for (const customerData of customers) {
       // Check if customer already exists
       const existing = await prisma.customer.findUnique({
-        where: { phone: customerData.phone }
+        where: { phone: customerData.phone },
       })
 
       if (!existing) {
         await prisma.customer.create({
-          data: customerData
+          data: customerData,
         })
         console.log(`✅ Created customer: ${customerData.name}`)
       } else {
@@ -45,7 +45,6 @@ async function createSampleCustomers() {
     }
 
     console.log('🎉 Sample customers created successfully!')
-
   } catch (error) {
     console.error('❌ Error creating sample customers:', error)
   } finally {

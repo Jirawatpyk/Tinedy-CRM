@@ -25,9 +25,7 @@ export default function NewCustomerPage() {
           </Button>
         </div>
         <h1 className="text-3xl font-bold">เพิ่มลูกค้าใหม่</h1>
-        <p className="text-muted-foreground">
-          สร้างข้อมูลลูกค้าใหม่ในระบบ
-        </p>
+        <p className="text-muted-foreground">สร้างข้อมูลลูกค้าใหม่ในระบบ</p>
       </div>
 
       <CustomerForm mode="create" />
