@@ -23,7 +23,9 @@ import {
   RefreshCw,
   ChevronLeft,
   ChevronRight,
+  Eye,
 } from 'lucide-react'
+import Link from 'next/link'
 
 interface JobWithRelations {
   id: string
@@ -71,7 +73,7 @@ const statusLabels: Record<string, string> = {
   NEW: 'ใหม่',
   ASSIGNED: 'มอบหมายแล้ว',
   IN_PROGRESS: 'กำลังดำเนินการ',
-  DONE: 'เสร็จสิ้น',
+  COMPLETED: 'เสร็จสิ้น',
   CANCELLED: 'ยกเลิก',
 }
 
@@ -82,7 +84,7 @@ const statusVariants: Record<
   NEW: 'outline',
   ASSIGNED: 'secondary',
   IN_PROGRESS: 'default',
-  DONE: 'default',
+  COMPLETED: 'default',
   CANCELLED: 'destructive',
 }
 
@@ -240,6 +242,7 @@ export function JobHistoryList({ customerId }: JobHistoryListProps) {
               <TableHead>สถานะ</TableHead>
               <TableHead>ผู้รับผิดชอบ</TableHead>
               <TableHead>หมายเหตุ</TableHead>
+              <TableHead>การจัดการ</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -294,6 +297,14 @@ export function JobHistoryList({ customerId }: JobHistoryListProps) {
                   <span className="text-sm text-muted-foreground">
                     {job.notes || '-'}
                   </span>
+                </TableCell>
+                <TableCell>
+                  <Link href={`/jobs/${job.id}`}>
+                    <Button variant="outline" size="sm">
+                      <Eye className="w-4 h-4 mr-2" />
+                      ดูรายละเอียด
+                    </Button>
+                  </Link>
                 </TableCell>
               </TableRow>
             ))}
@@ -375,6 +386,16 @@ export function JobHistoryList({ customerId }: JobHistoryListProps) {
                     <p className="text-sm mt-1">{job.notes}</p>
                   </div>
                 )}
+              </div>
+
+              {/* View Job Details Button */}
+              <div className="pt-3 border-t mt-3">
+                <Link href={`/jobs/${job.id}`} className="w-full">
+                  <Button variant="outline" size="sm" className="w-full">
+                    <Eye className="w-4 h-4 mr-2" />
+                    ดูรายละเอียดงาน
+                  </Button>
+                </Link>
               </div>
             </CardContent>
           </Card>

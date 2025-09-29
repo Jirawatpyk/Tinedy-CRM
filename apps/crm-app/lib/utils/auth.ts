@@ -1,4 +1,4 @@
-import { UserRole } from '@/types'
+import { UserRole } from '@prisma/client'
 
 export const ROLES = {
   ADMIN: 'ADMIN' as UserRole,

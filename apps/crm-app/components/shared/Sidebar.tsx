@@ -2,23 +2,19 @@
 
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
-import { Users, Home, Settings, LogOut } from 'lucide-react'
+import { Users, Home, Settings, LogOut, Briefcase } from 'lucide-react'
 import { signOut } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { usePathname } from 'next/navigation'
 
 const navigation = [
   { name: 'แดชบอร์ด', href: '/', icon: Home },
   { name: 'ลูกค้า', href: '/customers', icon: Users },
+  { name: 'งานบริการ', href: '/jobs', icon: Briefcase },
   { name: 'การตั้งค่า', href: '/admin/settings', icon: Settings },
 ]
 
 function SidebarContent() {
-  const [currentPath, setCurrentPath] = useState('/')
-
-  useEffect(() => {
-    setCurrentPath(window.location.pathname)
-  }, [])
+  const pathname = usePathname()
 
   return (
     <div className="flex flex-col w-64 min-w-64 bg-white shadow-lg border-r">
@@ -30,9 +26,10 @@ function SidebarContent() {
           <nav className="flex-1 px-2 space-y-1">
             {navigation.map((item) => {
               const isActive =
-                currentPath === item.href ||
+                pathname === item.href ||
                 (item.href === '/customers' &&
-                  currentPath.startsWith('/customers'))
+                  pathname.startsWith('/customers')) ||
+                (item.href === '/jobs' && pathname.startsWith('/jobs'))
               return (
                 <Link
                   key={item.name}

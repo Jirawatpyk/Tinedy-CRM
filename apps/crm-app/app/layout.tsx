@@ -9,6 +9,23 @@ export const metadata: Metadata = {
   title: 'Tinedy CRM',
   description:
     'Internal CRM system for managing customers, jobs, and quality control workflows',
+  manifest: '/manifest.json',
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+    viewportFit: 'cover',
+  },
+  themeColor: '#2563eb',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'Tinedy CRM',
+  },
+  formatDetection: {
+    telephone: false,
+  },
 }
 
 export default function RootLayout({

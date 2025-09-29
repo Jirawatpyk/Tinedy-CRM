@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { CustomerForm } from '@/components/forms/CustomerForm'
-import { Customer } from '@/types'
+import { Customer } from '@prisma/client'
 import '@testing-library/jest-dom'
 
 // Mock Next.js router

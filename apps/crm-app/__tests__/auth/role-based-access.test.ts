@@ -4,7 +4,7 @@ import {
   isOperations,
   isQCManager,
 } from '../../lib/utils/auth'
-import { UserRole } from '@/types'
+import { UserRole } from '@prisma/client'
 
 describe('Role-based Access Control', () => {
   describe('hasRequiredRole', () => {

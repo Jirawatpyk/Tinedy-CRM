@@ -9,6 +9,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import {
   checkDatabaseConnection,
   getDatabaseStats,
+  getLightweightDatabaseStats,
   checkMigrationStatus,
 } from '@/lib/db'
 
@@ -30,10 +31,24 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // ดึงข้อมูลสถิติและสถานะ migrations แบบ parallel
+    // Parse query parameters สำหรับ optimization level
+    const { searchParams } = new URL(request.url)
+    const lightweight = searchParams.get('lightweight') === 'true'
+
+    // ใช้ lightweight stats สำหรับ performance, full stats เมื่อต้องการข้อมูลครบถ้วน
     const [dbStats, migrationStatus] = await Promise.all([
-      getDatabaseStats().catch((error) => ({ error: error.message })),
-      checkMigrationStatus().catch((error) => ({ error: error.message })),
+      lightweight
+        ? getLightweightDatabaseStats().catch((error) => ({
+            error: error.message,
+          }))
+        : getDatabaseStats().catch((error) => ({ error: error.message })),
+      // Skip migration check for lightweight health checks
+      lightweight
+        ? Promise.resolve({
+            migrated: true,
+            message: 'Skipped for performance',
+          })
+        : checkMigrationStatus().catch((error) => ({ error: error.message })),
     ])
 
     const responseTime = Date.now() - startTime

@@ -55,7 +55,7 @@ describe('Optimized Middleware', () => {
     const request = {
       nextUrl: { pathname: '/dashboard' },
       cookies: {
-        get: jest.fn().mockReturnValue({ value: 'valid-token' })
+        get: jest.fn().mockReturnValue({ value: 'valid-token' }),
       },
     } as any
 

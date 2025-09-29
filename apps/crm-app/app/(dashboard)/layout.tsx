@@ -1,6 +1,7 @@
 import { auth } from '@/auth'
 import { redirect } from 'next/navigation'
 import { Sidebar } from '@/components/shared/Sidebar'
+import { LogoutButton } from '@/components/shared/LogoutButton'
 
 export default async function DashboardLayout({
   children,
@@ -33,6 +34,7 @@ export default async function DashboardLayout({
                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                     {session.user.role}
                   </span>
+                  <LogoutButton />
                 </div>
               </div>
             </div>

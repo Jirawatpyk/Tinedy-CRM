@@ -1,7 +1,7 @@
 'use client'
 
 import { useSession } from 'next-auth/react'
-import { UserRole } from '@/types'
+import { UserRole } from '@prisma/client'
 import {
   hasRequiredRole,
   isAdmin,

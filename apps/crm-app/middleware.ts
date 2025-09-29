@@ -27,8 +27,9 @@ export function middleware(request: NextRequest) {
   }
 
   // Check for authentication token in cookies
-  const sessionToken = request.cookies.get('authjs.session-token') ||
-                      request.cookies.get('__Secure-authjs.session-token')
+  const sessionToken =
+    request.cookies.get('authjs.session-token') ||
+    request.cookies.get('__Secure-authjs.session-token')
 
   // Redirect to login if no session token found
   if (!sessionToken) {
@@ -45,5 +46,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!.*\\..*|_next).*)', '/', '/(api|trpc)(.*)'],
+  matcher: ['/((?!api|_next|.*\\..*).*)', '/'],
 }

@@ -12,6 +12,8 @@ export type JobStatus =
   | 'IN_PROGRESS'
   | 'DONE'
   | 'CANCELLED'
+  | 'COMPLETED'
+  | 'ON_HOLD'
 
 export type Priority = 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT'
 

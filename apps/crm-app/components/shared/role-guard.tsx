@@ -1,7 +1,7 @@
 'use client'
 
 import { useRole } from '@/lib/hooks/useRole'
-import { UserRole } from '@/types'
+import { UserRole } from '@prisma/client'
 
 interface RoleGuardProps {
   children: React.ReactNode

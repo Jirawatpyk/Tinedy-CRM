@@ -1,6 +1,5 @@
-import { Suspense } from 'react'
 import { Metadata } from 'next'
-import { CustomerTable } from '@/components/shared/CustomerTable'
+import { CustomerTableServer } from '@/components/shared/CustomerTableServer'
 import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-react'
 import Link from 'next/link'
@@ -10,7 +9,18 @@ export const metadata: Metadata = {
   description: 'จัดการข้อมูลลูกค้าทั้งหมดในระบบ',
 }
 
-export default function CustomersPage() {
+interface CustomersPageProps {
+  searchParams?: {
+    q?: string
+    status?: string
+    page?: string
+    limit?: string
+    sortBy?: string
+    sortOrder?: 'asc' | 'desc'
+  }
+}
+
+export default function CustomersPage({ searchParams }: CustomersPageProps) {
   return (
     <div className="container mx-auto py-6">
       <div className="mb-6">
@@ -20,9 +30,7 @@ export default function CustomersPage() {
         </p>
       </div>
 
-      <Suspense fallback={<div>กำลังโหลดข้อมูลลูกค้า...</div>}>
-        <CustomerTable />
-      </Suspense>
+      <CustomerTableServer searchParams={searchParams} />
     </div>
   )
 }

@@ -3,7 +3,7 @@ import { auth } from '@/auth'
 import { prisma } from '@/lib/db'
 import { UserRole } from '@prisma/client'
 import { z } from 'zod'
-import { sanitizeCustomerInput } from '@/lib/middleware/sanitization'
+import { revalidatePath } from 'next/cache'
 
 export async function GET(
   request: NextRequest,
@@ -153,6 +153,10 @@ export async function PATCH(
       where: { id },
       data: updateData,
     })
+
+    // Revalidate customer pages to ensure fresh data
+    revalidatePath(`/customers/${id}`)
+    revalidatePath('/customers')
 
     return NextResponse.json(customer)
   } catch (error) {

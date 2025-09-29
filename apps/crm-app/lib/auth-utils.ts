@@ -4,7 +4,7 @@
  */
 
 import { auth } from '@/auth'
-import { UserRole } from '@/types'
+import { UserRole } from '@prisma/client'
 import { redirect } from 'next/navigation'
 
 /**

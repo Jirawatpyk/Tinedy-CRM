@@ -4,8 +4,8 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import * as z from 'zod'
-import { Customer } from '@/types'
+import { z } from 'zod'
+import { Customer } from '@prisma/client'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -88,7 +88,19 @@ export function CustomerForm({ customer, mode, onSuccess }: CustomerFormProps) {
       if (onSuccess) {
         onSuccess()
       } else {
-        router.push('/customers')
+        if (mode === 'edit') {
+          // Force refresh data cache and redirect back to customer view page after edit
+          router.refresh()
+          router.push(`/customers/${customer?.id}`)
+          // Force page reload to ensure fresh data
+          setTimeout(() => window.location.reload(), 100)
+        } else {
+          // Force refresh data cache and redirect to customer list after create
+          router.refresh()
+          router.push('/customers')
+          // Force page reload to ensure fresh data
+          setTimeout(() => window.location.reload(), 100)
+        }
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'เกิดข้อผิดพลาด')

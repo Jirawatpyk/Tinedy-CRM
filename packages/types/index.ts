@@ -36,7 +36,7 @@ export interface CustomerUpdateInput {
   contactChannel?: string
 }
 
-export type JobStatus = 'NEW' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'ON_HOLD'
+export type JobStatus = 'NEW' | 'ASSIGNED' | 'IN_PROGRESS' | 'DONE' | 'CANCELLED' | 'ON_HOLD'
 export type Priority = 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT'
 
 export interface Job {
@@ -46,9 +46,11 @@ export interface Job {
   description?: string
   status: JobStatus
   priority: Priority
-  scheduledAt?: Date
+  scheduledDate?: Date
   completedAt?: Date
-  assignedToId?: string
+  assignedUserId?: string
+  price?: number
+  notes?: string
   n8nWorkflowId?: string
   webhookData?: any
   createdAt: Date
@@ -60,8 +62,10 @@ export interface JobCreateInput {
   serviceType: string
   description?: string
   priority?: Priority
-  scheduledAt?: Date
-  assignedToId?: string
+  scheduledDate?: Date
+  assignedUserId?: string
+  price?: number
+  notes?: string
   n8nWorkflowId?: string
   webhookData?: any
 }
@@ -71,9 +75,11 @@ export interface JobUpdateInput {
   description?: string
   status?: JobStatus
   priority?: Priority
-  scheduledAt?: Date
+  scheduledDate?: Date
   completedAt?: Date
-  assignedToId?: string
+  assignedUserId?: string
+  price?: number
+  notes?: string
 }
 
 export interface ApiResponse<T = any> {

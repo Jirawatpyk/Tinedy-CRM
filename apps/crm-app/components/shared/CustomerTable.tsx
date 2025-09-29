@@ -22,7 +22,7 @@ import {
   Eye,
 } from 'lucide-react'
 import Link from 'next/link'
-import { Customer } from '@/types'
+import { Customer } from '@prisma/client'
 
 const ITEMS_PER_PAGE = 10
 

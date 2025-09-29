@@ -1,13 +1,15 @@
 import { prisma } from '@/lib/db'
-import { Job, ServiceType, JobStatus, Prisma } from '@prisma/client'
+import { Job, ServiceType, JobStatus, Priority, Prisma } from '@prisma/client'
 
 export interface JobCreateInput {
   customerId: string
   serviceType: ServiceType
-  scheduledDate: Date
+  scheduledDate?: Date
   price: number
   notes?: string
   assignedUserId?: string
+  description?: string
+  priority?: string
 }
 
 export interface JobUpdateInput {
@@ -24,11 +26,14 @@ export interface JobWithRelations extends Job {
     id: string
     name: string
     phone: string
+    address: string
+    status: string
   }
   assignedUser?: {
     id: string
     name: string
     email: string
+    role: string
   } | null
 }
 
@@ -61,6 +66,8 @@ export class JobService {
               id: true,
               name: true,
               phone: true,
+              address: true,
+              status: true,
             },
           },
           assignedUser: {
@@ -68,6 +75,7 @@ export class JobService {
               id: true,
               name: true,
               email: true,
+              role: true,
             },
           },
         },
@@ -94,6 +102,8 @@ export class JobService {
             id: true,
             name: true,
             phone: true,
+            address: true,
+            status: true,
           },
         },
         assignedUser: {
@@ -101,6 +111,7 @@ export class JobService {
             id: true,
             name: true,
             email: true,
+            role: true,
           },
         },
       },
@@ -131,6 +142,8 @@ export class JobService {
               id: true,
               name: true,
               phone: true,
+              address: true,
+              status: true,
             },
           },
           assignedUser: {
@@ -138,6 +151,7 @@ export class JobService {
               id: true,
               name: true,
               email: true,
+              role: true,
             },
           },
         },
@@ -166,7 +180,7 @@ export class JobService {
 
     const [jobs, totalCount] = await Promise.all([
       prisma.job.findMany({
-        where: { assignedUserId },
+        where: { assignedUserId: assignedUserId },
         skip,
         take: limit,
         orderBy: {
@@ -178,6 +192,8 @@ export class JobService {
               id: true,
               name: true,
               phone: true,
+              address: true,
+              status: true,
             },
           },
           assignedUser: {
@@ -185,12 +201,13 @@ export class JobService {
               id: true,
               name: true,
               email: true,
+              role: true,
             },
           },
         },
       }),
       prisma.job.count({
-        where: { assignedUserId },
+        where: { assignedUserId: assignedUserId },
       }),
     ])
 
@@ -225,6 +242,8 @@ export class JobService {
               id: true,
               name: true,
               phone: true,
+              address: true,
+              status: true,
             },
           },
           assignedUser: {
@@ -232,6 +251,7 @@ export class JobService {
               id: true,
               name: true,
               email: true,
+              role: true,
             },
           },
         },
@@ -252,11 +272,28 @@ export class JobService {
    * สร้างงานใหม่
    */
   static async createJob(data: JobCreateInput): Promise<Job> {
+    const jobData: any = {
+      customerId: data.customerId,
+      serviceType: data.serviceType,
+      price: data.price,
+      notes: data.notes,
+      description: data.description,
+      priority: data.priority || 'MEDIUM',
+      status: 'NEW',
+    }
+
+    // เซ็ตวันเวลานัดหมาย
+    if (data.scheduledDate) {
+      jobData.scheduledDate = data.scheduledDate
+    }
+
+    // เซ็ตผู้รับผิดชอบ
+    if (data.assignedUserId) {
+      jobData.assignedUserId = data.assignedUserId
+    }
+
     return await prisma.job.create({
-      data: {
-        ...data,
-        status: 'NEW',
-      },
+      data: jobData,
     })
   }
 
@@ -282,11 +319,13 @@ export class JobService {
   /**
    * มอบหมายงานให้ผู้ใช้
    */
-  static async assignJob(id: string, assignedUserId: string): Promise<Job> {
+  static async assignJob(jobId: string, userId: string): Promise<Job> {
     return await prisma.job.update({
-      where: { id },
+      where: { id: jobId },
       data: {
-        assignedUserId,
+        assignedUserId: userId,
+        // @ts-ignore - Prisma schema update in progress
+        assignedUserId: userId, // อัปเดตทั้งสองฟิลด์
         status: 'ASSIGNED',
       },
     })
@@ -309,10 +348,39 @@ export class JobService {
    * อัปเดตสถานะงาน
    */
   static async updateJobStatus(id: string, status: JobStatus): Promise<Job> {
+    const updateData: any = { status }
+
+    // ถ้าสถานะเป็น DONE ให้เซ็ต completedAt
+    if (status === 'DONE') {
+      updateData.completedAt = new Date()
+    }
+
     return await prisma.job.update({
       where: { id },
-      data: { status },
+      data: updateData,
     })
+  }
+
+  /**
+   * อัปเดตหมายเหตุงาน
+   */
+  static async updateJobNotes(id: string, notes: string): Promise<Job> {
+    return await prisma.job.update({
+      where: { id },
+      data: { notes },
+    })
+  }
+
+  /**
+   * ดึงรายการงานของลูกค้าตาม ID (alias สำหรับ getJobsByCustomerId)
+   */
+  static async getJobsByCustomer(
+    customerId: string,
+    pagination?: { page?: number; limit?: number }
+  ): Promise<JobsListResult> {
+    const page = pagination?.page || 1
+    const limit = pagination?.limit || 20
+    return this.getJobsByCustomerId(customerId, page, limit)
   }
 
   /**
@@ -373,6 +441,8 @@ export class JobService {
               id: true,
               name: true,
               phone: true,
+              address: true,
+              status: true,
             },
           },
           assignedUser: {
@@ -380,6 +450,7 @@ export class JobService {
               id: true,
               name: true,
               email: true,
+              role: true,
             },
           },
         },

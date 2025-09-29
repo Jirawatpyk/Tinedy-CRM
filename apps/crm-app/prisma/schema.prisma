@@ -7,8 +7,24 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model AuditLog {
+  id         String   @id @default(cuid())
+  entityType String
+  entityId   String
+  action     String
+  oldValues  Json?
+  newValues  Json?
+  userId     String?
+  timestamp  DateTime @default(now())
+
+  @@index([action])
+  @@index([entityType, entityId])
+  @@index([timestamp])
+  @@index([userId])
+}
+
 model Customer {
-  id             String         @id @default(uuid())
+  id             String         @id @default(cuid())
   name           String
   phone          String         @unique
   address        String?
@@ -18,108 +34,123 @@ model Customer {
   updatedAt      DateTime       @updatedAt
   jobs           Job[]
 
-  @@index([status])
-  @@index([createdAt])
-  @@index([name])
-  @@index([phone])
-  @@index([contactChannel])
-  @@index([name, status])
-  @@index([phone, status])
-  @@index([status, createdAt])
-  @@index([contactChannel, status])
-  @@map("customers")
+  // Performance-optimized indexes for search patterns
+  @@index([name], map: "idx_customer_name")
+  @@index([phone], map: "idx_customer_phone")
+  @@index([status], map: "idx_customer_status")
+  @@index([contactChannel], map: "idx_customer_contact_channel")
+  @@index([createdAt], map: "idx_customer_created_at")
+
+  // Compound indexes for common query patterns
+  @@index([status, name], map: "idx_customer_status_name")
+  @@index([status, phone], map: "idx_customer_status_phone")
+  @@index([status, createdAt], map: "idx_customer_status_created_at")
+  @@index([contactChannel, status], map: "idx_customer_channel_status")
+
+  // Specialized indexes for text search performance
+  @@index([name(sort: Asc), status(sort: Asc)], map: "idx_customer_name_status_search")
+  @@index([phone(sort: Asc), status(sort: Asc)], map: "idx_customer_phone_status_search")
+
+  // Index for pagination with consistent sorting
+  @@index([createdAt(sort: Desc), id(sort: Desc)], map: "idx_customer_pagination")
+}
+
+model FailedWebhook {
+  id            String    @id @default(cuid())
+  originalLogId String
+  payload       Json
+  errorDetails  String
+  failedAt      DateTime  @default(now())
+  retryAfter    DateTime?
+  manualReview  Boolean   @default(false)
+
+  @@index([failedAt])
+  @@index([manualReview])
+  @@index([retryAfter])
 }
 
 model Job {
-  id             String            @id @default(uuid())
-  customerId     String
-  serviceType    ServiceType
-  scheduledDate  DateTime
-  price          Decimal           @db.Decimal(10, 2)
-  status         JobStatus         @default(NEW)
-  notes          String?
-  assignedUserId String?
-  description    String?
-  priority       Priority          @default(MEDIUM)
-  completedAt    DateTime?
-  n8nWorkflowId  String?
-  webhookData    Json?
-  createdAt      DateTime          @default(now())
-  updatedAt      DateTime          @updatedAt
-  assignedUser   User?             @relation("AssignedJobs", fields: [assignedUserId], references: [id])
-  customer       Customer          @relation(fields: [customerId], references: [id])
-  qualityChecks  QualityCheck[]
-  training       TrainingWorkflow?
+  id                 String              @id @default(cuid())
+  customerId         String
+  serviceType        ServiceType
+  scheduledDate      DateTime
+  price              Decimal             @db.Decimal(10, 2)
+  status             JobStatus           @default(NEW)
+  notes              String?
+  assignedUserId     String?
+  description        String?
+  priority           Priority            @default(MEDIUM)
+  completedAt        DateTime?
+  n8nWorkflowId      String?
+  webhookData        Json?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  assignedUser   User?               @relation(fields: [assignedUserId], references: [id])
+  customer       Customer            @relation(fields: [customerId], references: [id])
+  qualityChecks      QualityCheck[]
+  trainingWorkflow TrainingWorkflow?
   webhookLogs    WebhookLog[]
 
-  @@index([customerId])
-  @@index([status])
-  @@index([assignedUserId])
-  @@index([scheduledDate])
-  @@index([createdAt])
-  @@index([priority])
-  @@index([serviceType])
-  @@index([price])
-  @@index([customerId, scheduledDate(sort: Desc)])
-  @@index([customerId, status])
-  @@index([assignedUserId, status])
-  @@index([status, priority])
-  @@index([serviceType, status])
-  @@index([scheduledDate, status])
-  @@index([customerId, serviceType])
-  @@map("jobs")
-}
+  // Primary single-column indexes
+  @@index([customerId], map: "idx_job_customer_id")
+  @@index([assignedUserId], map: "idx_job_assigned_user_id")
+  @@index([status], map: "idx_job_status")
+  @@index([serviceType], map: "idx_job_service_type")
+  @@index([priority], map: "idx_job_priority")
+  @@index([scheduledDate], map: "idx_job_scheduled_date")
+  @@index([createdAt], map: "idx_job_created_at")
 
-model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  password     String
-  name         String
-  role         UserRole @default(OPERATIONS)
-  isActive     Boolean  @default(true)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  assignedJobs Job[]    @relation("AssignedJobs")
+  // Performance-optimized compound indexes for common queries
+  @@index([status, priority], map: "idx_job_status_priority")
+  @@index([status, createdAt(sort: Desc)], map: "idx_job_status_created_at")
+  @@index([customerId, status], map: "idx_job_customer_status")
+  @@index([customerId, scheduledDate(sort: Desc)], map: "idx_job_customer_scheduled")
+  @@index([assignedUserId, status], map: "idx_job_assigned_status")
+  @@index([serviceType, status], map: "idx_job_service_status")
 
-  @@index([role])
-  @@index([isActive])
-  @@index([email])
-  @@map("users")
-}
+  // Advanced compound indexes for complex queries
+  @@index([status, priority, scheduledDate(sort: Asc)], map: "idx_job_status_priority_date")
+  @@index([customerId, serviceType, status], map: "idx_job_customer_service_status")
+  @@index([assignedUserId, status, priority], map: "idx_job_assigned_status_priority")
 
-model QualityCheck {
-  id          String           @id @default(cuid())
-  jobId       String
-  checklistId String
-  status      QCStatus         @default(PENDING)
-  completedBy String?
-  completedAt DateTime?
-  notes       String?
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
-  checklist   QualityChecklist @relation(fields: [checklistId], references: [id])
-  job         Job              @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  // Optimized pagination index
+  @@index([createdAt(sort: Desc), id(sort: Desc)], map: "idx_job_pagination")
 
-  @@index([jobId])
-  @@index([status])
-  @@index([createdAt])
-  @@index([checklistId])
-  @@map("quality_checks")
+  // Coverage index for job listing with minimal data
+  @@index([status, scheduledDate(sort: Desc), customerId, assignedUserId], map: "idx_job_listing_coverage")
 }
 
 model QualityChecklist {
-  id            String         @id @default(cuid())
-  name          String
-  description   String?
-  items         Json
-  isActive      Boolean        @default(true)
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  qualityChecks QualityCheck[]
+  id             String           @id @default(cuid())
+  name           String
+  description    String?
+  items          Json
+  isActive       Boolean          @default(true)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime       @updatedAt
+  qualityChecks  QualityCheck[]
 
   @@index([isActive])
   @@index([name])
-  @@map("quality_checklists")
+}
+
+model QualityCheck {
+  id                 String             @id @default(cuid())
+  jobId              String
+  checklistId        String
+  status             QCStatus           @default(PENDING)
+  completedBy        String?
+  completedAt        DateTime?
+  notes              String?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  qualityChecklist   QualityChecklist   @relation(fields: [checklistId], references: [id])
+  job                Job                @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([checklistId])
+  @@index([createdAt])
+  @@index([jobId])
+  @@index([status])
 }
 
 model TrainingWorkflow {
@@ -133,9 +164,24 @@ model TrainingWorkflow {
   updatedAt         DateTime       @updatedAt
   job               Job            @relation(fields: [jobId], references: [id], onDelete: Cascade)
 
-  @@index([status])
   @@index([createdAt])
-  @@map("training_workflows")
+  @@index([status])
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      UserRole @default(OPERATIONS)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  jobs      Job[]
+
+  @@index([email])
+  @@index([isActive])
+  @@index([role])
 }
 
 model WebhookLog {
@@ -151,46 +197,13 @@ model WebhookLog {
   retryCount   Int           @default(0)
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
-  createdJob   Job?          @relation(fields: [createdJobId], references: [id])
+  job          Job?          @relation(fields: [createdJobId], references: [id])
 
+  @@index([createdAt])
+  @@index([processedAt])
   @@index([source])
   @@index([status])
-  @@index([createdAt])
   @@index([workflowId])
-  @@index([processedAt])
-  @@map("webhook_logs")
-}
-
-model FailedWebhook {
-  id            String    @id @default(cuid())
-  originalLogId String
-  payload       Json
-  errorDetails  String
-  failedAt      DateTime  @default(now())
-  retryAfter    DateTime?
-  manualReview  Boolean   @default(false)
-
-  @@index([failedAt])
-  @@index([manualReview])
-  @@index([retryAfter])
-  @@map("failed_webhooks")
-}
-
-model AuditLog {
-  id         String   @id @default(cuid())
-  entityType String
-  entityId   String
-  action     String
-  oldValues  Json?
-  newValues  Json?
-  userId     String?
-  timestamp  DateTime @default(now())
-
-  @@index([entityType, entityId])
-  @@index([timestamp])
-  @@index([userId])
-  @@index([action])
-  @@map("audit_logs")
 }
 
 enum CustomerStatus {
@@ -199,17 +212,14 @@ enum CustomerStatus {
   BLOCKED
 }
 
-enum ServiceType {
-  CLEANING
-  TRAINING
-}
-
 enum JobStatus {
   NEW
   ASSIGNED
   IN_PROGRESS
   DONE
   CANCELLED
+  COMPLETED
+  ON_HOLD
 }
 
 enum Priority {
@@ -217,13 +227,6 @@ enum Priority {
   MEDIUM
   HIGH
   URGENT
-}
-
-enum UserRole {
-  ADMIN
-  OPERATIONS
-  TRAINING
-  QC_MANAGER
 }
 
 enum QCStatus {
@@ -234,12 +237,24 @@ enum QCStatus {
   NEEDS_REVIEW
 }
 
+enum ServiceType {
+  CLEANING
+  TRAINING
+}
+
 enum TrainingStatus {
   AWAITING_DOCUMENTS
   DOCUMENTS_RECEIVED
   TRAINING_IN_PROGRESS
   TRAINING_COMPLETED
   COMPLETED
+}
+
+enum UserRole {
+  ADMIN
+  OPERATIONS
+  TRAINING
+  QC_MANAGER
 }
 
 enum WebhookStatus {

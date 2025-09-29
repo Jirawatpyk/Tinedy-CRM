@@ -6,7 +6,7 @@ import {
   ManagerOnly,
   OperationsOnly,
 } from '../../components/shared/role-guard'
-import { UserRole } from '@/types'
+import { UserRole } from '@prisma/client'
 
 // Mock useRole hook
 jest.mock('../../lib/hooks/useRole', () => ({

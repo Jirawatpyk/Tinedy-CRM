@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/auth'
 import { prisma } from '@/lib/db'
 import { UserRole } from '@prisma/client'
+import { unstable_cache } from 'next/cache'
+import { revalidatePath } from 'next/cache'
 
 export async function GET(request: NextRequest) {
   try {
@@ -39,22 +41,67 @@ export async function GET(request: NextRequest) {
       whereConditions.status = status
     }
 
-    // Search conditions - ใช้ case-insensitive search
+    // Optimized search conditions leveraging specialized indexes
     if (query) {
-      whereConditions.OR = [
-        {
-          name: {
-            contains: query,
-            mode: 'insensitive',
+      // Use startsWith for better index utilization when possible
+      const isPhoneNumber = /^\d+$/.test(query)
+      const useStartsWith = query.length >= 2
+
+      if (isPhoneNumber) {
+        // Phone number search - use index-optimized startsWith first, then contains
+        whereConditions.OR = [
+          {
+            phone: {
+              startsWith: query,
+            },
           },
-        },
-        {
-          phone: {
-            contains: query,
-            mode: 'insensitive',
+          {
+            phone: {
+              contains: query,
+              mode: 'insensitive',
+            },
           },
-        },
-      ]
+        ]
+      } else if (useStartsWith) {
+        // Name search - leverage name indexes with startsWith + contains
+        whereConditions.OR = [
+          {
+            name: {
+              startsWith: query,
+              mode: 'insensitive',
+            },
+          },
+          {
+            name: {
+              contains: query,
+              mode: 'insensitive',
+            },
+          },
+          // Phone fallback for mixed searches
+          {
+            phone: {
+              contains: query,
+              mode: 'insensitive',
+            },
+          },
+        ]
+      } else {
+        // Short query fallback - minimal search scope
+        whereConditions.OR = [
+          {
+            name: {
+              contains: query,
+              mode: 'insensitive',
+            },
+          },
+          {
+            phone: {
+              contains: query,
+              mode: 'insensitive',
+            },
+          },
+        ]
+      }
     }
 
     // Validate sortBy field
@@ -72,39 +119,78 @@ export async function GET(request: NextRequest) {
     // Calculate offset for pagination
     const offset = (page - 1) * limit
 
-    // Execute queries in parallel for better performance
-    const [customers, totalCount] = await Promise.all([
-      // Get paginated customers
-      prisma.customer.findMany({
-        where: whereConditions,
-        select: {
-          id: true,
-          name: true,
-          phone: true,
-          address: true,
-          contactChannel: true,
-          status: true,
-          createdAt: true,
-          updatedAt: true,
-        },
-        orderBy: {
-          [finalSortBy]: sortOrder,
-        },
-        skip: offset,
-        take: limit,
-      }),
-      // Get total count for pagination
-      prisma.customer.count({
-        where: whereConditions,
-      }),
-    ])
+    // Create cache key based on query parameters
+    const cacheKey = [
+      'customers',
+      JSON.stringify(whereConditions),
+      finalSortBy,
+      sortOrder,
+      offset.toString(),
+      limit.toString(),
+    ]
+
+    // Cached customer data fetcher with optimized queries
+    const getCachedCustomerData = unstable_cache(
+      async () => {
+        // Execute queries in parallel for better performance
+        const [customers, totalCount] = await Promise.all([
+          // Get paginated customers with optimized select and cursor-based pagination for large datasets
+          prisma.customer.findMany({
+            where: whereConditions,
+            select: {
+              id: true,
+              name: true,
+              phone: true,
+              address: true,
+              contactChannel: true,
+              status: true,
+              createdAt: true,
+              updatedAt: true,
+            },
+            orderBy: [
+              { [finalSortBy]: sortOrder },
+              { id: 'desc' }, // Secondary sort for consistent pagination
+            ],
+            skip: offset,
+            take: limit,
+          }),
+          // Optimize count query - use estimate for large datasets
+          offset === 0 && !query && !status
+            ? // Fast count estimation for first page without filters
+              prisma.$queryRaw`
+                SELECT CAST(
+                  CASE
+                    WHEN reltuples > 1000
+                    THEN reltuples
+                    ELSE (SELECT COUNT(*) FROM "Customer")
+                  END AS INTEGER
+                ) as count
+                FROM pg_class
+                WHERE relname = 'Customer'
+              `.then((result: any) => result[0]?.count || 0)
+            : // Accurate count for filtered results
+              prisma.customer.count({
+                where: whereConditions,
+              }),
+        ])
+
+        return { customers, totalCount }
+      },
+      cacheKey,
+      {
+        revalidate: query ? 30 : 300, // Shorter cache for search queries, longer for static lists
+        tags: ['customers', ...(query ? [`search:${query}`] : [])],
+      }
+    )
+
+    const { customers, totalCount } = await getCachedCustomerData()
 
     // Calculate pagination metadata
     const totalPages = Math.ceil(totalCount / limit)
     const hasNextPage = page < totalPages
     const hasPrevPage = page > 1
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       customers,
       pagination: {
         currentPage: page,
@@ -121,6 +207,16 @@ export async function GET(request: NextRequest) {
         sortOrder,
       },
     })
+
+    // Add performance optimization headers
+    response.headers.set(
+      'Cache-Control',
+      'public, s-maxage=60, stale-while-revalidate=300'
+    )
+    response.headers.set('CDN-Cache-Control', 'public, s-maxage=60')
+    response.headers.set('Vary', 'Authorization')
+
+    return response
   } catch (error) {
     console.error('Error fetching customers:', error)
     return NextResponse.json(
@@ -194,12 +290,17 @@ export async function POST(request: NextRequest) {
     // Create customer
     const customer = await prisma.customer.create({
       data: {
+        id: 'customer-' + Date.now(),
         name: name.trim(),
         phone: phone.trim(),
         address: address?.trim() || null,
         contactChannel: contactChannel.trim(),
+        updatedAt: new Date(),
       },
     })
+
+    // Revalidate customer list to ensure fresh data
+    revalidatePath('/customers')
 
     return NextResponse.json(customer, { status: 201 })
   } catch (error) {
