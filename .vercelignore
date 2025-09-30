@@ -46,7 +46,12 @@ Thumbs.db
 
 # Docs and tests (not needed for production)
 docs
+Docs
 tests
 __tests__
 *.test.*
 *.spec.*
+scripts/test-*.ts
+scripts/test-*.js
+scripts/*-test.ts
+scripts/*-test.js
