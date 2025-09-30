@@ -1,15 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server'
-
-// Define role-based route protection rules (lightweight types)
-type UserRole = 'ADMIN' | 'OPERATIONS' | 'TRAINING' | 'QC_MANAGER'
-
-const PROTECTED_ROUTES: Record<string, UserRole[]> = {
-  '/admin': ['ADMIN'],
-  '/admin/users': ['ADMIN'],
-  '/admin/settings': ['ADMIN'],
-  '/manager': ['ADMIN', 'QC_MANAGER'],
-  '/operations': ['ADMIN', 'OPERATIONS', 'QC_MANAGER'],
-}
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -40,11 +30,9 @@ export function middleware(request: NextRequest) {
 
   // For now, allow authenticated users to access all routes
   // Role-based checking will be handled in individual pages/API routes
-  // This reduces the middleware bundle size significantly
-
   return NextResponse.next()
 }
 
 export const config = {
-  matcher: ['/((?!api|_next|.*\\..*).*)', '/'],
+  matcher: ['/((?!api|_next|.*\..*).*)', '/'],
 }
