@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { JobStatus } from '@prisma/client'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -23,6 +23,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { toast } from 'sonner'
 import { Loader2 } from 'lucide-react'
+import { getValidNextStatuses } from '@/lib/utils/jobStatus'
 
 interface JobStatusDropdownProps {
   jobId: string
@@ -132,6 +133,16 @@ export function JobStatusDropdown({
   const [selectedStatus, setSelectedStatus] = useState<JobStatus | null>(null)
   const [showConfirmDialog, setShowConfirmDialog] = useState(false)
 
+  // Filter status options to show only valid next statuses
+  const filteredStatusOptions = useMemo(() => {
+    const validNextStatuses = getValidNextStatuses(currentStatus)
+
+    // Include current status in the options for display purposes
+    const validStatusesSet = new Set([currentStatus, ...validNextStatuses])
+
+    return statusOptions.filter((option) => validStatusesSet.has(option.value))
+  }, [currentStatus])
+
   const handleStatusSelect = (newStatus: string) => {
     const status = newStatus as JobStatus
     if (status === currentStatus) return
@@ -219,7 +230,7 @@ export function JobStatusDropdown({
             )}
           </SelectTrigger>
           <SelectContent>
-            {statusOptions.map((option) => (
+            {filteredStatusOptions.map((option) => (
               <SelectItem key={option.value} value={option.value}>
                 {option.label}
               </SelectItem>

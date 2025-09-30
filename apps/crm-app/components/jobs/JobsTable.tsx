@@ -34,6 +34,9 @@ import {
   Filter,
 } from 'lucide-react'
 import Link from 'next/link'
+import { JobStatusDropdown } from '@/components/shared/JobStatusDropdown'
+import { useSession } from 'next-auth/react'
+import { JobStatus } from '@prisma/client'
 
 interface JobWithRelations {
   id: string
@@ -139,6 +142,7 @@ function JobsTableSkeleton() {
 }
 
 export function JobsTable() {
+  const { data: session } = useSession()
   const [data, setData] = useState<JobsListResult | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -165,8 +169,9 @@ export function JobsTable() {
         })
 
         if (searchTerm) params.append('search', searchTerm)
-        if (status) params.append('status', status)
-        if (serviceType) params.append('serviceType', serviceType)
+        if (status && status !== 'all') params.append('status', status)
+        if (serviceType && serviceType !== 'all')
+          params.append('serviceType', serviceType)
 
         const response = await fetch(`/api/jobs?${params.toString()}`)
 
@@ -221,6 +226,28 @@ export function JobsTable() {
   const handleFilterChange = () => {
     fetchJobs(1, search, statusFilter, serviceTypeFilter)
   }
+
+  // Check if user can update a job's status
+  const canUpdateJobStatus = useCallback(
+    (job: JobWithRelations): boolean => {
+      if (!session?.user) return false
+
+      const isAdmin = session.user.role === 'ADMIN'
+      const isAssignedUser = session.user.id === job.assignedUser?.id
+
+      return isAdmin || isAssignedUser
+    },
+    [session]
+  )
+
+  // Handle status change from dropdown
+  const handleStatusChange = useCallback(
+    (jobId: string, newStatus: JobStatus) => {
+      // Refresh the table after status update
+      fetchJobs(currentPage, search, statusFilter, serviceTypeFilter)
+    },
+    [currentPage, search, statusFilter, serviceTypeFilter, fetchJobs]
+  )
 
   useEffect(() => {
     fetchJobs()
@@ -306,7 +333,7 @@ export function JobsTable() {
               <SelectValue placeholder="สถานะ" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">ทุกสถานะ</SelectItem>
+              <SelectItem value="all">ทุกสถานะ</SelectItem>
               <SelectItem value="NEW">ใหม่</SelectItem>
               <SelectItem value="ASSIGNED">มอบหมายแล้ว</SelectItem>
               <SelectItem value="IN_PROGRESS">กำลังดำเนินการ</SelectItem>
@@ -327,7 +354,7 @@ export function JobsTable() {
               <SelectValue placeholder="ประเภทบริการ" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">ทุกประเภท</SelectItem>
+              <SelectItem value="all">ทุกประเภท</SelectItem>
               <SelectItem value="CLEANING">ทำความสะอาด</SelectItem>
               <SelectItem value="TRAINING">ฝึกอบรม</SelectItem>
             </SelectContent>
@@ -345,7 +372,7 @@ export function JobsTable() {
               <TableHead>ประเภทบริการ</TableHead>
               <TableHead>วันที่นัด</TableHead>
               <TableHead>ราคา</TableHead>
-              <TableHead>สถานะ</TableHead>
+              <TableHead>อัปเดตสถานะ</TableHead>
               <TableHead>ความสำคัญ</TableHead>
               <TableHead>ผู้รับผิดชอบ</TableHead>
               <TableHead>การจัดการ</TableHead>
@@ -391,9 +418,19 @@ export function JobsTable() {
                   </div>
                 </TableCell>
                 <TableCell>
-                  <Badge variant={statusVariants[job.status]}>
-                    {statusLabels[job.status] || job.status}
-                  </Badge>
+                  {canUpdateJobStatus(job) ? (
+                    <JobStatusDropdown
+                      jobId={job.id}
+                      currentStatus={job.status as JobStatus}
+                      onStatusChange={(newStatus) =>
+                        handleStatusChange(job.id, newStatus)
+                      }
+                    />
+                  ) : (
+                    <Badge variant={statusVariants[job.status]}>
+                      {statusLabels[job.status] || job.status}
+                    </Badge>
+                  )}
                 </TableCell>
                 <TableCell>
                   <Badge variant={priorityVariants[job.priority]}>

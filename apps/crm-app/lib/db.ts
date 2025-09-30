@@ -8,6 +8,10 @@
 
 import { PrismaClient, type Prisma } from '@prisma/client'
 
+// Re-export Prisma types and enums for convenient imports
+export type { Prisma }
+export { JobStatus, UserRole, CustomerStatus } from '@prisma/client'
+
 declare global {
   // eslint-disable-next-line no-var
   var prisma: PrismaClient | undefined
