@@ -5,6 +5,9 @@
  * ตรวจสอบสถานะของระบบและฐานข้อมูล
  */
 
+// Force dynamic rendering for this route because it uses request.url
+export const dynamic = 'force-dynamic'
+
 import { NextRequest, NextResponse } from 'next/server'
 import {
   checkDatabaseConnection,
