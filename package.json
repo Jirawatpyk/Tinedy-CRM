@@ -7,7 +7,6 @@
     "apps/*",
     "packages/*"
   ],
-  "packageManager": "pnpm@8.15.0",
   "scripts": {
     "dev": "pnpm --filter crm-app dev",
     "build": "pnpm --filter crm-app build",
