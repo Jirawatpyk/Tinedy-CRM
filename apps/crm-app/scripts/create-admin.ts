@@ -22,11 +22,13 @@ async function createAdmin() {
 
     const admin = await prisma.user.create({
       data: {
+        id: 'admin-' + Date.now(),
         email: 'admin@tinedy.com',
         password: hashedPassword,
         name: 'ผู้ดูแลระบบ',
         role: 'ADMIN',
         isActive: true,
+        updatedAt: new Date(),
       },
     })
 

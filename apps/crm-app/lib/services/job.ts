@@ -114,6 +114,14 @@ export class JobService {
             role: true,
           },
         },
+        checklistTemplate: {
+          select: {
+            id: true,
+            name: true,
+            serviceType: true,
+            items: true,
+          },
+        },
       },
     })
   }
@@ -462,6 +470,214 @@ export class JobService {
       jobs,
       totalCount,
       hasNextPage: totalCount > skip + limit,
+    }
+  }
+
+  /**
+   * Story 2.5: Attach checklist template to job
+   */
+  static async attachChecklistTemplate(
+    jobId: string,
+    templateId: string | null
+  ) {
+    // Validate job exists
+    const job = await this.getJobById(jobId)
+    if (!job) {
+      throw new Error('Job not found')
+    }
+
+    // If attaching template, validate it exists
+    if (templateId) {
+      const template = await prisma.checklistTemplate.findFirst({
+        where: {
+          id: templateId,
+          isTemplate: true,
+          isActive: true,
+        },
+      })
+
+      if (!template) {
+        throw new Error('Checklist template not found or inactive')
+      }
+
+      // REC-001: Validate service type compatibility
+      if (template.serviceType !== job.serviceType) {
+        throw new Error(
+          `Service type mismatch: Template is for ${template.serviceType} but job is ${job.serviceType}`
+        )
+      }
+
+      // Initialize itemStatus from template items
+      const items = template.items as string[]
+      const initialItemStatus: Record<string, boolean> = {}
+      items.forEach((item) => {
+        initialItemStatus[item] = false
+      })
+
+      // Update job with template and initialized status
+      const updatedJob = await prisma.job.update({
+        where: { id: jobId },
+        data: {
+          checklistTemplateId: templateId,
+          itemStatus: initialItemStatus,
+          checklistCompletedAt: null,
+        },
+        include: {
+          checklistTemplate: {
+            select: {
+              id: true,
+              name: true,
+              description: true,
+              items: true,
+            },
+          },
+        },
+      })
+
+      return updatedJob
+    }
+
+    // Detach template (templateId is null)
+    const updatedJob = await prisma.job.update({
+      where: { id: jobId },
+      data: {
+        checklistTemplateId: null,
+        itemStatus: null,
+        checklistCompletedAt: null,
+      },
+    })
+
+    return updatedJob
+  }
+
+  /**
+   * Story 2.5: Update checklist item status
+   */
+  static async updateChecklistItemStatus(
+    jobId: string,
+    itemStatus: Record<string, boolean>
+  ) {
+    // Validate job exists and has checklist
+    const job = await prisma.job.findUnique({
+      where: { id: jobId },
+      include: {
+        checklistTemplate: {
+          select: {
+            items: true,
+          },
+        },
+      },
+    })
+
+    if (!job) {
+      throw new Error('Job not found')
+    }
+
+    if (!job.checklistTemplateId) {
+      throw new Error('Job does not have a checklist template attached')
+    }
+
+    // Calculate completion
+    const templateItems = job.checklistTemplate?.items as string[]
+    const completedCount = Object.values(itemStatus).filter(
+      (completed) => completed
+    ).length
+    const isFullyCompleted =
+      completedCount === templateItems.length && completedCount > 0
+
+    // Update job
+    const updatedJob = await prisma.job.update({
+      where: { id: jobId },
+      data: {
+        itemStatus: itemStatus,
+        checklistCompletedAt: isFullyCompleted ? new Date() : null,
+      },
+      include: {
+        checklistTemplate: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            items: true,
+          },
+        },
+      },
+    })
+
+    // Calculate progress for response
+    const progress = {
+      completed: completedCount,
+      total: templateItems.length,
+      percentage: Math.round((completedCount / templateItems.length) * 100),
+      isComplete: isFullyCompleted,
+    }
+
+    return {
+      job: updatedJob,
+      progress,
+    }
+  }
+
+  /**
+   * Story 2.5: Get job with checklist details
+   */
+  static async getJobWithChecklist(jobId: string) {
+    const job = await prisma.job.findUnique({
+      where: { id: jobId },
+      include: {
+        customer: {
+          select: {
+            id: true,
+            name: true,
+            phone: true,
+            address: true,
+          },
+        },
+        assignedUser: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+          },
+        },
+        checklistTemplate: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            serviceType: true,
+            items: true,
+          },
+        },
+      },
+    })
+
+    if (!job) {
+      throw new Error('Job not found')
+    }
+
+    // Calculate checklist progress if template is attached
+    let checklistProgress = null
+    if (job.checklistTemplateId && job.itemStatus && job.checklistTemplate) {
+      const templateItems = job.checklistTemplate.items as string[]
+      const itemStatusObj = job.itemStatus as Record<string, boolean>
+      const completedCount = Object.values(itemStatusObj).filter(
+        (completed) => completed
+      ).length
+
+      checklistProgress = {
+        completed: completedCount,
+        total: templateItems.length,
+        percentage: Math.round((completedCount / templateItems.length) * 100),
+        isComplete:
+          completedCount === templateItems.length && completedCount > 0,
+      }
+    }
+
+    return {
+      ...job,
+      checklistProgress,
     }
   }
 }

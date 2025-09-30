@@ -157,6 +157,8 @@ export async function PATCH(
     // Revalidate customer pages to ensure fresh data
     revalidatePath(`/customers/${id}`)
     revalidatePath('/customers')
+    // Also revalidate customer list with all possible search params
+    revalidatePath('/customers', 'page')
 
     return NextResponse.json(customer)
   } catch (error) {

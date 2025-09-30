@@ -93,18 +93,50 @@ This is a Tinedy CRM system - an internal CRM for managing customers, jobs, and 
 
 ## Current State
 
-This appears to be a documentation-heavy project in early planning stages. The actual codebase structure is not yet implemented - only documentation exists in the `docs/` folder and BMAD-core configuration files are present.
+**Project Status**: 🔄 **Active Development** (Epic 2 - 67% Complete)
+
+### Implementation Progress
+- ✅ **Epic 1**: Core System & User Management (Completed)
+  - NextAuth.js v5 authentication with role-based access
+  - Database schema with Prisma ORM
+  - User model with 4 roles (ADMIN, OPERATIONS, TRAINING, QC_MANAGER)
+
+- 🔄 **Epic 2**: Customer & Job Management (In Progress - 67%)
+  - ✅ Stories 2.1-2.6: Customer CRUD, Job management, Checklist system (Completed)
+  - 📝 Stories 2.7-2.9: Delete operations, User management (Approved, ready for implementation)
+  - **Remaining**: 2 weeks (7 days)
+
+- 🔴 **Epic 3**: Admin Job Booking Management (DEPRECATED)
+  - 98.3% overlap with Epic 2 - see `docs/DEPRECATED-Epic-3.md`
+  - All functionality covered by Epic 2 stories
+
+- ⏳ **Epic 4**: Quality Control & Automation (Planned - next after Epic 2)
+  - N8N webhook integration
+  - Checklist template management
+  - Advanced quality control features
+
+### Project Roadmap
+See detailed roadmap: `docs/PROJECT-ROADMAP.md`
+
+### Codebase Structure
+The actual implementation is located in:
+- `apps/crm-app/` - Main Next.js application
+- `apps/crm-app/prisma/` - Database schema and migrations
+- `apps/crm-app/app/api/` - API route handlers
+- `apps/crm-app/components/` - React components
 
 ## External Integrations
 
 - **N8N**: Receives booking data via webhook endpoints
-- **LINE OA**: Customer booking source (external to this CRM system)
+- **LINE OA**: Customer booking source (external to this CRM system) และ booking จากแอดมิน
 - ให้ตอบกลับเป็นภาษาไทย เข้าใจง่าย
 - การพัฒนาโค้ดควรใช้ MCP ที่มีอยู่ด้วย
 - เมื่อมีการแก้ไข database ให้เรียกใช้ agent .claude\agents\database-architect.md มาช่วยทำงานด้วย
 - Integration กับ Context7 MCP (สำหรับการพัฒนาที่ทันสมัย)
-- Dev agent AUTO-DELEGATE to specialized sub-agents (located in .claude\agents) based on task type for maximum speed and accuracy.
+- การทำงานแบบ Best Practice
 - Dev agent ปรับปรุงการทำงาน 
 1. ตรวจสอบการมีอยู่จริงของไฟล์ ก่อนรายงานว่าเสร็จสิ้น   
 2. การทดสอบที่ครอบคลุมมากขึ้น ก่อนประกาศความสำเร็จ      
 3. ความละเอียดในการติดตามงาน เพื่อความถูกต้อง
+- Dev agent AUTO-DELEGATE to specialized sub-agents (located in .claude\agents) based on task type for maximum speed and accuracy.
+- การแก้ไข error ควรแก้ไขอย่างเป็นระบบ วิเคราะห์ error หาสาเหตุ เป้าหมาย แก้ไข

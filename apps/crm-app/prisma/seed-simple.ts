@@ -25,6 +25,7 @@ async function main() {
 
   const admin = await prisma.user.create({
     data: {
+      id: 'admin-user-001',
       email: 'admin@tinedy.com',
       name: 'Admin User',
       password: adminPassword,
@@ -34,6 +35,7 @@ async function main() {
 
   const operations = await prisma.user.create({
     data: {
+      id: 'operations-user-001',
       email: 'operations1@tinedy.com',
       name: 'Operations Staff',
       password: opsPassword,

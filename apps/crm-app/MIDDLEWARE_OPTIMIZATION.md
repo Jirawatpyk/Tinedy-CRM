@@ -1,7 +1,9 @@
 # Middleware Optimization for Vercel Edge Function Size Limit
 
 ## Problem
+
 The original middleware was importing heavy dependencies including:
+
 - NextAuth.js auth function (which includes bcryptjs and database connections)
 - Prisma client
 - Full type definitions
@@ -11,12 +13,14 @@ This caused the Edge Function bundle to exceed Vercel's 1MB size limit.
 ## Solution
 
 ### 1. Lightweight Middleware
+
 Replaced heavy imports with lightweight implementation:
 
 **Before:**
+
 ```typescript
-import { auth } from '@/auth'  // Heavy NextAuth import
-import { UserRole } from '@/types'  // External type dependency
+import { auth } from '@/auth' // Heavy NextAuth import
+import { UserRole } from '@/types' // External type dependency
 
 export default auth((req) => {
   // Complex authentication logic in edge runtime
@@ -24,6 +28,7 @@ export default auth((req) => {
 ```
 
 **After:**
+
 ```typescript
 import { NextRequest, NextResponse } from 'next/server'
 
@@ -32,26 +37,32 @@ type UserRole = 'ADMIN' | 'OPERATIONS' | 'TRAINING' | 'QC_MANAGER'
 
 export function middleware(request: NextRequest) {
   // Simple session token checking via cookies
-  const sessionToken = request.cookies.get('authjs.session-token') ||
-                      request.cookies.get('__Secure-authjs.session-token')
+  const sessionToken =
+    request.cookies.get('authjs.session-token') ||
+    request.cookies.get('__Secure-authjs.session-token')
   // Basic authentication check only
 }
 ```
 
 ### 2. Authentication Strategy
+
 - **Middleware**: Only checks for presence of session cookie
 - **Pages**: Handle role-based authorization server-side
 - **API Routes**: Handle detailed authentication logic
 
 ### 3. Server-Side Auth Utilities
+
 Created `lib/auth-utils.ts` with helper functions:
+
 - `requireAdmin()` - Admin-only pages
 - `requireOperations()` - Operations team access
 - `requireManager()` - Manager/QC access
 - `protectRoute()` - General protection with role checking
 
 ### 4. Updated Page Implementation
+
 **Before (Client-side):**
+
 ```typescript
 'use client'
 export default withRole(AdminPage, {
@@ -60,9 +71,10 @@ export default withRole(AdminPage, {
 ```
 
 **After (Server-side):**
+
 ```typescript
 export default async function AdminPage() {
-  const user = await requireAdmin()  // Server-side protection
+  const user = await requireAdmin() // Server-side protection
   // Page content
 }
 ```
@@ -84,11 +96,13 @@ export default async function AdminPage() {
 ## Testing
 
 Run middleware tests:
+
 ```bash
 npm test __tests__/middleware.test.ts
 ```
 
 Build verification:
+
 ```bash
 npm run build
 ```

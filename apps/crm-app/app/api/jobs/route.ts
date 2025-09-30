@@ -48,6 +48,11 @@ const jobListQuerySchema = z.object({
     .optional()
     .nullable()
     .transform((val) => val || undefined),
+  search: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => val || undefined),
 })
 
 export async function GET(request: NextRequest) {
@@ -85,6 +90,7 @@ export async function GET(request: NextRequest) {
       customerId: searchParams.get('customerId'),
       assignedUserId: searchParams.get('assignedUserId'),
       serviceType: searchParams.get('serviceType'),
+      search: searchParams.get('search'),
     })
 
     // Use JobService to get jobs
@@ -94,6 +100,7 @@ export async function GET(request: NextRequest) {
       filters.assignedUserId = queryData.assignedUserId
     if (queryData.status) filters.status = [queryData.status]
     if (queryData.serviceType) filters.serviceType = [queryData.serviceType]
+    if (queryData.search) filters.search = queryData.search
 
     const pagination = { page: queryData.page, limit: queryData.limit }
     const result = await JobService.getJobs(filters, pagination)

@@ -2,6 +2,8 @@ import { Suspense } from 'react'
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { JobService } from '@/lib/services/JobService'
+import { JobDetailsManagement } from '@/components/jobs/JobDetailsManagement'
+import { JobChecklistSection } from '@/components/shared/JobChecklistSection'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -325,39 +327,20 @@ async function JobDetails({ jobId }: { jobId: string }) {
           </CardContent>
         </Card>
 
-        {/* Assignment Management Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-xl">การมอบหมายงาน</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {job.assignedUser ? (
-              <div className="flex items-center space-x-2">
-                <User className="w-4 h-4 text-muted-foreground" />
-                <span className="font-medium">{job.assignedUser.name}</span>
-                <Badge variant="secondary">{job.assignedUser.role}</Badge>
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">
-                ยังไม่มีการมอบหมายงาน
-              </p>
-            )}
-          </CardContent>
-        </Card>
+        {/* Interactive Job Management Section */}
+        <JobDetailsManagement
+          jobId={job.id}
+          currentStatus={job.status}
+          currentAssignedUser={job.assignedUser}
+          initialNotes={job.notes || ''}
+        />
 
-        {/* Notes Management Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-xl">หมายเหตุ</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {job.notes ? (
-              <p className="p-3 bg-muted rounded-md">{job.notes}</p>
-            ) : (
-              <p className="text-sm text-muted-foreground">ไม่มีหมายเหตุ</p>
-            )}
-          </CardContent>
-        </Card>
+        {/* Quality Control Checklist Section */}
+        <JobChecklistSection
+          jobId={job.id}
+          serviceType={job.serviceType}
+          isAdmin={true}
+        />
       </div>
     )
   } catch (error) {

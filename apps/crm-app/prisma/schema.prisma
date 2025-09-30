@@ -83,13 +83,22 @@ model Job {
   completedAt        DateTime?
   n8nWorkflowId      String?
   webhookData        Json?
+
+  // Story 2.5: Quality Control Checklist Management
+  checklistTemplateId   String?
+  itemStatus           Json?
+  checklistCompletedAt DateTime?
+
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt
-  assignedUser   User?               @relation(fields: [assignedUserId], references: [id])
-  customer       Customer            @relation(fields: [customerId], references: [id])
+
+  // Relations
+  assignedUser       User?               @relation(fields: [assignedUserId], references: [id])
+  customer           Customer            @relation(fields: [customerId], references: [id])
+  checklistTemplate  ChecklistTemplate?  @relation("JobChecklistTemplate", fields: [checklistTemplateId], references: [id], onDelete: SetNull)
   qualityChecks      QualityCheck[]
-  trainingWorkflow TrainingWorkflow?
-  webhookLogs    WebhookLog[]
+  trainingWorkflow   TrainingWorkflow?
+  webhookLogs        WebhookLog[]
 
   // Primary single-column indexes
   @@index([customerId], map: "idx_job_customer_id")
@@ -99,6 +108,8 @@ model Job {
   @@index([priority], map: "idx_job_priority")
   @@index([scheduledDate], map: "idx_job_scheduled_date")
   @@index([createdAt], map: "idx_job_created_at")
+  @@index([checklistTemplateId], map: "idx_job_checklist_template_id")
+  @@index([checklistCompletedAt], map: "idx_job_checklist_completed_at")
 
   // Performance-optimized compound indexes for common queries
   @@index([status, priority], map: "idx_job_status_priority")
@@ -120,37 +131,58 @@ model Job {
   @@index([status, scheduledDate(sort: Desc), customerId, assignedUserId], map: "idx_job_listing_coverage")
 }
 
-model QualityChecklist {
+// Story 2.5: Unified Checklist Template Model
+// Replaces old QualityChecklist - serves both quality control and template purposes
+model ChecklistTemplate {
   id             String           @id @default(cuid())
   name           String
   description    String?
-  items          Json
+  items          Json             // Array of checklist items
+  serviceType    ServiceType      @default(CLEANING)
+  category       String           @default("QUALITY_CONTROL") // QUALITY_CONTROL, TEMPLATE
+  isTemplate     Boolean          @default(false)
   isActive       Boolean          @default(true)
   createdAt      DateTime         @default(now())
-  updatedAt      DateTime       @updatedAt
-  qualityChecks  QualityCheck[]
+  updatedAt      DateTime         @updatedAt
 
-  @@index([isActive])
-  @@index([name])
+  // Dual-purpose relationships
+  qualityChecks     QualityCheck[]           // Existing quality control usage
+  jobsUsingTemplate Job[]                    @relation("JobChecklistTemplate") // Story 2.5 usage
+
+  // Performance indexes
+  @@index([isActive], map: "idx_checklist_template_is_active")
+  @@index([name], map: "idx_checklist_template_name")
+  @@index([serviceType], map: "idx_checklist_template_service_type")
+  @@index([category], map: "idx_checklist_template_category")
+  @@index([isTemplate], map: "idx_checklist_template_is_template")
+
+  // Unique constraint for templates
+  @@unique([name, serviceType], map: "checklist_templates_name_serviceType_template_unique")
+
+  @@map("checklist_templates")
 }
 
 model QualityCheck {
   id                 String             @id @default(cuid())
   jobId              String
-  checklistId        String
+  checklistId        String             // References ChecklistTemplate (renamed from QualityChecklist)
   status             QCStatus           @default(PENDING)
   completedBy        String?
   completedAt        DateTime?
   notes              String?
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
-  qualityChecklist   QualityChecklist   @relation(fields: [checklistId], references: [id])
+
+  // Relations
+  checklistTemplate  ChecklistTemplate  @relation(fields: [checklistId], references: [id])
   job                Job                @relation(fields: [jobId], references: [id], onDelete: Cascade)
 
-  @@index([checklistId])
-  @@index([createdAt])
-  @@index([jobId])
-  @@index([status])
+  @@index([checklistId], map: "idx_quality_check_checklist_id")
+  @@index([createdAt], map: "idx_quality_check_created_at")
+  @@index([jobId], map: "idx_quality_check_job_id")
+  @@index([status], map: "idx_quality_check_status")
+
+  @@map("quality_checks")
 }
 
 model TrainingWorkflow {

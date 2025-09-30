@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import Link from 'next/link'
 import { FixedSizeList as List } from 'react-window'
 import {
   Table,
@@ -25,9 +26,7 @@ import {
   Loader2,
   RefreshCw,
 } from 'lucide-react'
-import Link from 'next/link'
 import { Customer } from '@prisma/client'
-import { useCustomerCache } from '@/lib/hooks/useCustomerCache'
 import { usePerformanceMonitor } from '@/lib/utils/performance'
 
 interface CustomerApiResponse {
@@ -147,8 +146,6 @@ export function EnhancedCustomerTable({
 }: EnhancedCustomerTableProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { fetchCustomers, loading, error, prefetchCustomers, invalidateCache } =
-    useCustomerCache()
   const { startMark, endMark } = usePerformanceMonitor()
 
   const [apiResponse, setApiResponse] =
@@ -161,6 +158,12 @@ export function EnhancedCustomerTable({
   const listRef = useRef<List>(null)
   const searchTimeoutRef = useRef<NodeJS.Timeout>()
 
+  // CRITICAL FIX: Sync initialData when server component re-renders with new data
+  useEffect(() => {
+    setApiResponse(initialData)
+    setIsSearching(false) // Stop loading state when new data arrives
+  }, [initialData])
+
   // Memoized values for better performance
   const customers = useMemo(
     () => apiResponse?.customers || [],
@@ -171,7 +174,7 @@ export function EnhancedCustomerTable({
     [apiResponse?.pagination]
   )
 
-  // Smart search with immediate UI feedback
+  // Simplified search with URL state only
   useEffect(() => {
     // Clear previous timeout
     if (searchTimeoutRef.current) {
@@ -183,7 +186,7 @@ export function EnhancedCustomerTable({
       setIsSearching(true)
     }
 
-    searchTimeoutRef.current = setTimeout(async () => {
+    searchTimeoutRef.current = setTimeout(() => {
       const params = new URLSearchParams(searchParams.toString())
 
       if (searchQuery) {
@@ -202,69 +205,17 @@ export function EnhancedCustomerTable({
 
       const newUrl = `/customers?${params.toString()}`
 
-      try {
-        // Fetch data with cache
-        const searchParamsObj = {
-          q: searchQuery || undefined,
-          status: statusFilter || undefined,
-          page: '1',
-          limit: '10',
-        }
-
-        const newData = await fetchCustomers(searchParamsObj, {
-          useCache: true,
-          cacheTTL: searchQuery ? 60000 : 300000, // Shorter cache for search
-        })
-
-        if (newData) {
-          setApiResponse(newData)
-        }
-
-        router.push(newUrl, { scroll: false })
-      } catch (err) {
-        console.error('Search error:', err)
-      } finally {
-        setIsSearching(false)
-      }
-    }, 150) // Faster response time
+      // Just update URL - let server component handle the data fetching
+      router.push(newUrl, { scroll: false })
+      setIsSearching(false)
+    }, 150)
 
     return () => {
       if (searchTimeoutRef.current) {
         clearTimeout(searchTimeoutRef.current)
       }
     }
-  }, [searchQuery, statusFilter, router, searchParams, fetchCustomers])
-
-  // Prefetch adjacent pages for faster navigation
-  useEffect(() => {
-    if (pagination) {
-      const prefetchParams = []
-
-      // Prefetch next page
-      if (pagination.hasNextPage) {
-        prefetchParams.push({
-          q: searchQuery || undefined,
-          status: statusFilter || undefined,
-          page: (pagination.currentPage + 1).toString(),
-          limit: '10',
-        })
-      }
-
-      // Prefetch previous page
-      if (pagination.hasPrevPage) {
-        prefetchParams.push({
-          q: searchQuery || undefined,
-          status: statusFilter || undefined,
-          page: (pagination.currentPage - 1).toString(),
-          limit: '10',
-        })
-      }
-
-      if (prefetchParams.length > 0) {
-        prefetchCustomers(prefetchParams)
-      }
-    }
-  }, [pagination, searchQuery, statusFilter, prefetchCustomers])
+  }, [searchQuery, statusFilter, router, searchParams])
 
   // Optimized status badge with memoization
   const getStatusBadge = useCallback((status: string) => {
@@ -296,68 +247,31 @@ export function EnhancedCustomerTable({
     }
   }, [])
 
-  // Enhanced page change with prefetching
+  // Handle page change with buggy router.refresh pattern (original code)
   const handlePageChange = useCallback(
-    async (page: number) => {
+    (page: number) => {
       const params = new URLSearchParams(searchParams.toString())
       params.set('page', page.toString())
-
-      try {
-        const newData = await fetchCustomers(
-          {
-            q: searchQuery || undefined,
-            status: statusFilter || undefined,
-            page: page.toString(),
-            limit: '10',
-          },
-          { useCache: true }
-        )
-
-        if (newData) {
-          setApiResponse(newData)
-          router.push(`/customers?${params.toString()}`, { scroll: false })
-
-          // Scroll to top
-          if (listRef.current) {
-            listRef.current.scrollToItem(0, 'start')
-          }
-        }
-      } catch (err) {
-        console.error('Page change error:', err)
-      }
+      setIsSearching(true)
+      router.push(`/customers?${params.toString()}`, { scroll: false })
+      router.refresh() // BUG: This causes double-request pattern
+      setTimeout(() => setIsSearching(false), 100)
     },
-    [router, searchParams, searchQuery, statusFilter, fetchCustomers]
+    [router, searchParams]
   )
 
   // Clear filters handler
   const handleClearFilters = useCallback(() => {
     setSearchQuery('')
     setStatusFilter('')
-    invalidateCache(['search:'])
     router.push('/customers')
-  }, [router, invalidateCache])
+  }, [router])
 
   // Force refresh handler
-  const handleRefresh = useCallback(async () => {
-    try {
-      invalidateCache()
-      const newData = await fetchCustomers(
-        {
-          q: searchQuery || undefined,
-          status: statusFilter || undefined,
-          page: pagination?.currentPage.toString() || '1',
-          limit: '10',
-        },
-        { force: true }
-      )
-
-      if (newData) {
-        setApiResponse(newData)
-      }
-    } catch (err) {
-      console.error('Refresh error:', err)
-    }
-  }, [fetchCustomers, invalidateCache, searchQuery, statusFilter, pagination])
+  const handleRefresh = useCallback(() => {
+    // Force page refresh to reload server component data
+    router.refresh()
+  }, [router])
 
   // Memoized data for virtualized list with render performance tracking
   const listData = useMemo(() => {
@@ -365,27 +279,11 @@ export function EnhancedCustomerTable({
     const data = {
       customers,
       getStatusBadge,
-      isLoading: loading || isSearching,
+      isLoading: isSearching,
     }
     endMark('customerRender')
     return data
-  }, [customers, getStatusBadge, loading, isSearching, startMark, endMark])
-
-  if (error) {
-    return (
-      <div className="text-center py-8">
-        <div className="text-red-600 mb-4">
-          <User className="h-12 w-12 mx-auto mb-2" />
-          <p className="text-lg font-medium">เกิดข้อผิดพลาด</p>
-          <p className="text-sm">{error}</p>
-        </div>
-        <Button onClick={handleRefresh} variant="default">
-          <RefreshCw className="mr-2 h-4 w-4" />
-          ลองใหม่
-        </Button>
-      </div>
-    )
-  }
+  }, [customers, getStatusBadge, isSearching, startMark, endMark])
 
   const ROW_HEIGHT = 60
   const TABLE_HEIGHT = Math.min(
@@ -406,7 +304,7 @@ export function EnhancedCustomerTable({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10 pr-4"
-            disabled={loading}
+            disabled={isSearching}
           />
           {isSearching && (
             <Loader2 className="absolute right-3 top-3 h-4 w-4 animate-spin text-blue-500" />
@@ -416,10 +314,10 @@ export function EnhancedCustomerTable({
           onClick={handleRefresh}
           variant="outline"
           size="sm"
-          disabled={loading}
+          disabled={isSearching}
         >
           <RefreshCw
-            className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`}
+            className={`mr-2 h-4 w-4 ${isSearching ? 'animate-spin' : ''}`}
           />
           รีเฟรช
         </Button>
@@ -490,7 +388,7 @@ export function EnhancedCustomerTable({
         </div>
 
         {/* Table Body */}
-        {customers.length === 0 && !loading && !isSearching ? (
+        {customers.length === 0 && !isSearching ? (
           <div className="text-center py-12">
             <div className="text-gray-500">
               <User className="h-16 w-16 mx-auto mb-4 text-gray-300" />
@@ -511,7 +409,7 @@ export function EnhancedCustomerTable({
             ref={listRef}
             height={TABLE_HEIGHT}
             width="100%"
-            itemCount={Math.max(customers.length, loading ? 10 : 0)} // Show placeholders while loading
+            itemCount={Math.max(customers.length, isSearching ? 10 : 0)} // Show placeholders while searching
             itemSize={ROW_HEIGHT}
             itemData={listData}
             className="scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
@@ -521,7 +419,7 @@ export function EnhancedCustomerTable({
         )}
       </div>
 
-      {/* Enhanced Pagination */}
+      {/* Enhanced Pagination with onClick handlers (original buggy code) */}
       {pagination && pagination.totalPages > 1 && (
         <div className="flex items-center justify-between">
           <p className="text-sm text-gray-600">
@@ -532,7 +430,7 @@ export function EnhancedCustomerTable({
               variant="outline"
               size="sm"
               onClick={() => handlePageChange(pagination.currentPage - 1)}
-              disabled={!pagination.hasPrevPage || loading}
+              disabled={!pagination.hasPrevPage || isSearching}
             >
               <ChevronLeft className="h-4 w-4" />
               ก่อนหน้า
@@ -547,16 +445,16 @@ export function EnhancedCustomerTable({
                   const page = startPage + i
                   if (page > pagination.totalPages) return null
 
+                  const isCurrentPage = pagination.currentPage === page
+
                   return (
                     <Button
                       key={page}
-                      variant={
-                        pagination.currentPage === page ? 'default' : 'outline'
-                      }
+                      variant={isCurrentPage ? 'default' : 'outline'}
                       size="sm"
-                      onClick={() => handlePageChange(page)}
                       className="w-10 h-10"
-                      disabled={loading}
+                      onClick={() => handlePageChange(page)}
+                      disabled={isCurrentPage || isSearching}
                     >
                       {page}
                     </Button>
@@ -569,7 +467,7 @@ export function EnhancedCustomerTable({
               variant="outline"
               size="sm"
               onClick={() => handlePageChange(pagination.currentPage + 1)}
-              disabled={!pagination.hasNextPage || loading}
+              disabled={!pagination.hasNextPage || isSearching}
             >
               ถัดไป
               <ChevronRight className="h-4 w-4" />

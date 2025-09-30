@@ -22,10 +22,16 @@ enum CustomerStatus {
 
 enum JobStatus {
   NEW         // งานใหม่ที่ยังไม่ได้รับมอบหมาย
+  ASSIGNED    // งานที่ถูกมอบหมายแล้ว
   IN_PROGRESS // งานที่กำลังดำเนินการ
-  COMPLETED   // งานที่เสร็จแล้ว
+  DONE        // งานที่เสร็จแล้ว (เปลี่ยนจาก COMPLETED)
   CANCELLED   // งานที่ยกเลิก
   ON_HOLD     // งานที่หยุดชั่วคราว
+}
+
+enum ServiceType {
+  CLEANING  // บริการทำความสะอาด
+  TRAINING  // บริการฝึกอบรม
 }
 
 enum Priority {
@@ -71,62 +77,80 @@ enum WebhookStatus {
 // =============================================================================
 
 model Customer {
-  id          String         @id @default(cuid())
-  lineUserId  String?        @unique // รหัสผู้ใช้ LINE OA
-  name        String                 // ชื่อลูกค้า
-  phone       String?                // หมายเลขโทรศัพท์
-  email       String?                // อีเมล
-  address     String?                // ที่อยู่
-  notes       String?                // หมายเหตุเพิ่มเติม
-  status      CustomerStatus @default(ACTIVE)
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
+  id             String         @id @default(cuid())
+  lineUserId     String?        @unique // รหัสผู้ใช้ LINE OA
+  name           String                 // ชื่อลูกค้า
+  phone          String?                // หมายเลขโทรศัพท์
+  email          String?                // อีเมล
+  address        String?                // ที่อยู่
+  notes          String?                // หมายเหตุเพิ่มเติม
+  contactChannel String                 // ช่องทางการติดต่อ (LINE, PHONE, EMAIL)
+  status         CustomerStatus @default(ACTIVE)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
 
   // Relations - ความสัมพันธ์กับตารางอื่น
-  jobs        Job[]
+  jobs            Job[]
+  serviceHistories ServiceHistory[]
 
   // Indexes สำหรับ Performance
   @@index([status])
   @@index([createdAt])
   @@index([lineUserId])
+  @@index([contactChannel]) // สำหรับการค้นหาตามช่องทางติดต่อ
   @@index([name]) // สำหรับการค้นหาตามชื่อ
   @@map("customers")
 }
 
 model Job {
-  id            String      @id @default(cuid())
-  customerId    String      // รหัสลูกค้า
-  serviceType   String      // ประเภทบริการ
-  description   String?     // รายละเอียดงาน
-  status        JobStatus   @default(NEW)
-  priority      Priority    @default(MEDIUM)
-  scheduledAt   DateTime?   // เวลานัดหมาย
-  completedAt   DateTime?   // เวลาที่เสร็จ
-  assignedToId  String?     // รหัสพนักงานที่รับผิดชอบ
-  n8nWorkflowId String?     // รหัส N8N workflow
-  webhookData   Json?       // ข้อมูลดิบจาก webhook
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  id              String      @id @default(cuid())
+  customerId      String      // รหัสลูกค้า
+  serviceType     ServiceType // ประเภทบริการ
+  description     String?     // รายละเอียดงาน
+  status          JobStatus   @default(NEW)
+  priority        Priority    @default(MEDIUM)
+  scheduledDate   DateTime?   // เวลานัดหมาย (ใช้เป็นหลัก)
+  completedAt     DateTime?   // เวลาที่เสร็จ
+  assignedUserId  String?     // รหัสพนักงานที่รับผิดชอบ (ใช้เป็นหลัก)
+  price           Decimal?    @db.Decimal(10, 2) // ราคาบริการ
+  notes           String?     // หมายเหตุเพิ่มเติม
+  n8nWorkflowId   String?     // รหัส N8N workflow
+  webhookData     Json?       // ข้อมูลดิบจาก webhook
+
+  // Story 2.5: Checklist Template Integration
+  checklistTemplateId String?   // รหัส Checklist Template สำหรับ Story 2.5
+  itemStatus         Json?     // สถานะของแต่ละรายการ checklist (Record<string, boolean>)
+  checklistCompletedAt DateTime? // เวลาที่ทำ checklist เสร็จสิ้น
+
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
 
   // Relations
-  customer      Customer          @relation(fields: [customerId], references: [id], onDelete: Restrict)
-  assignedTo    User?             @relation(fields: [assignedToId], references: [id], onDelete: SetNull)
-  qualityChecks QualityCheck[]
-  training      TrainingWorkflow?
-  webhookLogs   WebhookLog[]
+  customer         Customer          @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  assignedUser     User?             @relation("AssignedUser", fields: [assignedUserId], references: [id], onDelete: SetNull)
+  qualityChecks    QualityCheck[]
+  training         TrainingWorkflow?
+  webhookLogs      WebhookLog[]
+  serviceHistories ServiceHistory[]
+
+  // Story 2.5: Checklist Template Relationship
+  checklistTemplate ChecklistTemplate? @relation("JobChecklistTemplate", fields: [checklistTemplateId], references: [id], onDelete: SetNull)
 
   // Indexes สำหรับ Performance
   @@index([customerId])
   @@index([status])
-  @@index([assignedToId])
-  @@index([scheduledAt])
+  @@index([assignedUserId])
+  @@index([scheduledDate])
   @@index([createdAt])
   @@index([priority])
   @@index([serviceType])
   // Composite indexes สำหรับ query ที่ซับซ้อน
   @@index([customerId, status])
-  @@index([assignedToId, status])
+  @@index([assignedUserId, status])
   @@index([status, priority])
+  // Story 2.5: Checklist Template Indexes
+  @@index([checklistTemplateId])
+  @@index([checklistCompletedAt])
   @@map("jobs")
 }
 
@@ -134,13 +158,15 @@ model User {
   id        String   @id @default(cuid())
   email     String   @unique // อีเมลสำหรับเข้าสู่ระบบ
   name      String           // ชื่อผู้ใช้
+  password  String           // รหัสผ่านที่เข้ารหัสแล้ว
   role      UserRole @default(OPERATIONS)
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // Relations
-  assignedJobs Job[]
+  assignedUserJobs Job[]            @relation("AssignedUser")
+  serviceHistories ServiceHistory[] @relation("TechnicianServiceHistory")
 
   // Indexes
   @@index([role])
@@ -166,7 +192,7 @@ model QualityCheck {
 
   // Relations
   job         Job              @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  checklist   QualityChecklist @relation(fields: [checklistId], references: [id], onDelete: Restrict)
+  checklist   ChecklistTemplate @relation(fields: [checklistId], references: [id], onDelete: Restrict)
 
   // Indexes
   @@index([jobId])
@@ -176,22 +202,33 @@ model QualityCheck {
   @@map("quality_checks")
 }
 
-model QualityChecklist {
+model ChecklistTemplate {
   id          String         @id @default(cuid())
   name        String         // ชื่อเช็คลิสต์
   description String?        // คำอธิบาย
+  serviceType ServiceType?   // ประเภทบริการ (CLEANING, TRAINING) - สำหรับ Story 2.5
+  category    String         @default("QUALITY_CONTROL") // QUALITY_CONTROL, TEMPLATE
+  isTemplate  Boolean        @default(false) // true สำหรับ Story 2.5 templates
   items       Json           // รายการเช็คลิสต์ (JSON array)
   isActive    Boolean        @default(true)
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
 
   // Relations
-  qualityChecks QualityCheck[]
+  qualityChecks QualityCheck[] // Backward compatibility
+  jobsUsingTemplate Job[] @relation("JobChecklistTemplate") // Story 2.5 relationship
 
   // Indexes
   @@index([isActive])
   @@index([name])
-  @@map("quality_checklists")
+  @@index([serviceType])
+  @@index([category])
+  @@index([isTemplate])
+
+  // Unique constraint สำหรับ templates เท่านั้น
+  @@unique([name, serviceType], map: "unique_template_name_service")
+
+  @@map("checklist_templates")
 }
 
 // =============================================================================
@@ -261,6 +298,46 @@ model FailedWebhook {
   @@index([manualReview])
   @@index([retryAfter])
   @@map("failed_webhooks")
+}
+
+// =============================================================================
+// SERVICE HISTORY SYSTEM - ระบบประวัติการให้บริการ
+// =============================================================================
+
+model ServiceHistory {
+  id            String   @id @default(cuid())
+  customerId    String   // รหัสลูกค้า (บังคับ)
+  jobId         String?  // รหัสงาน (อาจไม่มี สำหรับบริการแบบ walk-in)
+  serviceDate   DateTime // วันที่ให้บริการ (บังคับ)
+  technicianId  String   // รหัสช่างผู้ให้บริการ (บังคับ)
+  serviceType   String   // ประเภทบริการ (บังคับ)
+  qualityScore  Decimal? @db.Decimal(3, 2) // คะแนนคุณภาพ 0.00-10.00 (ไม่บังคับ)
+  duration      Int?     // ระยะเวลาให้บริการ (นาที)
+  notes         String?  // หมายเหตุเพิ่มเติม
+  isCompleted   Boolean  @default(true) // สถานะการให้บริการเสร็จสิ้น
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations - ความสัมพันธ์ที่รักษา Data Integrity
+  customer      Customer @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  job           Job?     @relation(fields: [jobId], references: [id], onDelete: SetNull)
+  technician    User     @relation("TechnicianServiceHistory", fields: [technicianId], references: [id], onDelete: Restrict)
+
+  // Performance Indexes - ออกแบบสำหรับ query patterns ที่คาดการณ์ไว้
+  @@index([customerId]) // สำหรับดูประวัติลูกค้า
+  @@index([technicianId]) // สำหรับดูผลงานช่าง
+  @@index([serviceDate]) // สำหรับค้นหาตามช่วงวันที่
+  @@index([serviceType]) // สำหรับรายงานตามประเภทบริการ
+  @@index([qualityScore]) // สำหรับรายงานคุณภาพ
+  @@index([isCompleted]) // สำหรับติดตามสถานะ
+
+  // Composite Indexes สำหรับ Complex Queries
+  @@index([customerId, serviceDate]) // ประวัติลูกค้าเรียงตามวันที่
+  @@index([technicianId, serviceDate]) // ผลงานช่างเรียงตามวันที่
+  @@index([serviceType, serviceDate]) // รายงานบริการตามช่วงเวลา
+  @@index([customerId, serviceType]) // ประวัติบริการแต่ละประเภทของลูกค้า
+
+  @@map("service_histories")
 }
 
 // =============================================================================

@@ -118,7 +118,10 @@ export function JobForm() {
         body: JSON.stringify({
           ...formData,
           price: Number(formData.price),
-          assignedUserId: formData.assignedUserId || undefined,
+          assignedUserId:
+            formData.assignedUserId === 'unassigned'
+              ? undefined
+              : formData.assignedUserId || undefined,
         }),
       })
 
@@ -286,7 +289,7 @@ export function JobForm() {
                 <SelectValue placeholder="เลือกผู้รับผิดชอบ (ไม่บังคับ)" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">ไม่มอบหมาย</SelectItem>
+                <SelectItem value="unassigned">ไม่มอบหมาย</SelectItem>
                 {users.map((user) => (
                   <SelectItem key={user.id} value={user.id}>
                     {user.name} ({user.email})

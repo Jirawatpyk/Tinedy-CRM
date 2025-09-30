@@ -3,7 +3,6 @@ import { auth } from '@/auth'
 import { prisma } from '@/lib/db'
 import { UserRole } from '@prisma/client'
 import { EnhancedCustomerTable } from './EnhancedCustomerTable'
-import { unstable_cache } from 'next/cache'
 
 interface CustomerTableServerProps {
   searchParams?: {
@@ -30,6 +29,16 @@ async function getCustomersData(
   const limit = Math.min(100, Math.max(1, parseInt(searchParams.limit || '10')))
   const sortBy = searchParams.sortBy || 'createdAt'
   const sortOrder = searchParams.sortOrder === 'asc' ? 'asc' : 'desc'
+
+  // Debug logging for pagination
+  console.log('🔍 CustomerTableServer Debug:', {
+    searchParams,
+    page,
+    limit,
+    offset: (page - 1) * limit,
+    query,
+    status,
+  })
 
   // Build where conditions
   const whereConditions: any = {}
@@ -65,56 +74,38 @@ async function getCustomersData(
   const finalSortBy = allowedSortFields.includes(sortBy) ? sortBy : 'createdAt'
   const offset = (page - 1) * limit
 
-  // Cache customer data for better performance
-  const getCachedData = unstable_cache(
-    async () => {
-      const [customers, totalCount] = await Promise.all([
-        prisma.customer.findMany({
-          where: whereConditions,
-          select: {
-            id: true,
-            name: true,
-            phone: true,
-            address: true,
-            contactChannel: true,
-            status: true,
-            createdAt: true,
-            updatedAt: true,
-          },
-          orderBy: {
-            [finalSortBy]: sortOrder,
-          },
-          skip: offset,
-          take: limit,
-        }),
-        prisma.customer.count({
-          where: whereConditions,
-        }),
-      ])
+  // Execute without cache for pagination to ensure immediate updates
+  const [customers, totalCount] = await Promise.all([
+    prisma.customer.findMany({
+      where: whereConditions,
+      select: {
+        id: true,
+        name: true,
+        phone: true,
+        address: true,
+        contactChannel: true,
+        status: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+      orderBy: {
+        [finalSortBy]: sortOrder,
+      },
+      skip: offset,
+      take: limit,
+    }),
+    prisma.customer.count({
+      where: whereConditions,
+    }),
+  ])
 
-      return { customers, totalCount }
-    },
-    [
-      'customers-server',
-      JSON.stringify(whereConditions),
-      finalSortBy,
-      sortOrder,
-      offset.toString(),
-      limit.toString(),
-    ],
-    {
-      revalidate: 30, // Cache for 30 seconds on server
-      tags: ['customers'],
-    }
-  )
-
-  const { customers, totalCount } = await getCachedData()
+  // Data is already fetched above
 
   const totalPages = Math.ceil(totalCount / limit)
   const hasNextPage = page < totalPages
   const hasPrevPage = page > 1
 
-  return {
+  const result = {
     customers,
     pagination: {
       currentPage: page,
@@ -131,6 +122,15 @@ async function getCustomersData(
       sortOrder,
     },
   }
+
+  // Debug return data
+  console.log('📤 CustomerTableServer Returning:', {
+    customersCount: customers.length,
+    pagination: result.pagination,
+    filters: result.filters,
+  })
+
+  return result
 }
 
 function CustomerTableSkeleton() {

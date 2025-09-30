@@ -2,7 +2,14 @@
 
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
-import { Users, Home, Settings, LogOut, Briefcase } from 'lucide-react'
+import {
+  Users,
+  Home,
+  Settings,
+  LogOut,
+  Briefcase,
+  ClipboardCheck,
+} from 'lucide-react'
 import { signOut } from 'next-auth/react'
 import { usePathname } from 'next/navigation'
 
@@ -10,6 +17,11 @@ const navigation = [
   { name: 'แดชบอร์ด', href: '/', icon: Home },
   { name: 'ลูกค้า', href: '/customers', icon: Users },
   { name: 'งานบริการ', href: '/jobs', icon: Briefcase },
+  {
+    name: 'เทมเพลต Checklist',
+    href: '/settings/checklist-templates',
+    icon: ClipboardCheck,
+  },
   { name: 'การตั้งค่า', href: '/admin/settings', icon: Settings },
 ]
 
@@ -29,7 +41,9 @@ function SidebarContent() {
                 pathname === item.href ||
                 (item.href === '/customers' &&
                   pathname.startsWith('/customers')) ||
-                (item.href === '/jobs' && pathname.startsWith('/jobs'))
+                (item.href === '/jobs' && pathname.startsWith('/jobs')) ||
+                (item.href === '/settings/checklist-templates' &&
+                  pathname.startsWith('/settings'))
               return (
                 <Link
                   key={item.name}

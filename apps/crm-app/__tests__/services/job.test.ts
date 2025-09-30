@@ -62,6 +62,8 @@ describe('JobService', () => {
               id: true,
               name: true,
               phone: true,
+              address: true,
+              status: true,
             },
           },
           assignedUser: {
@@ -69,6 +71,7 @@ describe('JobService', () => {
               id: true,
               name: true,
               email: true,
+              role: true,
             },
           },
         },
@@ -172,6 +175,8 @@ describe('JobService', () => {
               id: true,
               name: true,
               phone: true,
+              address: true,
+              status: true,
             },
           },
           assignedUser: {
@@ -179,6 +184,7 @@ describe('JobService', () => {
               id: true,
               name: true,
               email: true,
+              role: true,
             },
           },
         },
@@ -211,6 +217,8 @@ describe('JobService', () => {
         ...jobData,
         status: 'NEW',
         assignedUserId: null,
+        description: undefined,
+        priority: 'MEDIUM',
         createdAt: new Date(),
         updatedAt: new Date(),
       }
@@ -223,6 +231,8 @@ describe('JobService', () => {
         data: {
           ...jobData,
           status: 'NEW',
+          description: undefined,
+          priority: 'MEDIUM',
         },
       })
 
