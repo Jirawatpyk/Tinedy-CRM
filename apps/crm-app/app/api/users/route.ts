@@ -3,6 +3,9 @@ import { auth } from '@/auth'
 import { UserService } from '@/lib/services/user'
 import { UserRole } from '@prisma/client'
 
+// Force dynamic rendering for this route
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: NextRequest) {
   try {
     // ตรวจสอบ authentication
