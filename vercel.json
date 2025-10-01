@@ -1,24 +1,10 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "apps/crm-app/package.json",
-      "use": "@vercel/next",
-      "config": {
-        "distDir": ".next"
-      }
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "apps/crm-app/$1"
-    }
-  ],
-  "env": {
-    "NODE_ENV": "production"
-  },
   "installCommand": "pnpm install",
   "buildCommand": "cd apps/crm-app && pnpm build",
-  "outputDirectory": "apps/crm-app/.next"
+  "outputDirectory": "apps/crm-app/.next",
+  "framework": "nextjs",
+  "env": {
+    "NODE_ENV": "production"
+  }
 }

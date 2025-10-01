@@ -1,5 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Output Configuration for Vercel
+  output: 'standalone',
+
   // TypeScript Configuration
   typescript: {
     ignoreBuildErrors: false,
