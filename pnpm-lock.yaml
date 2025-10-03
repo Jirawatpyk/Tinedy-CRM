@@ -129,7 +129,7 @@ importers:
         specifier: latest
         version: 0.544.0(react@18.3.1)
       next:
-        specifier: ^14.0.0
+        specifier: 14.2.33
         version: 14.2.33(@babel/core@7.28.4)(@playwright/test@1.55.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       next-auth:
         specifier: ^5.0.0-beta.29
